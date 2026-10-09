@@ -17,7 +17,7 @@
 <body>
 <div class="layout"><div class="mobile-shade" id="shade"></div><aside class="sidebar" id="sidebar"><div class="brand"><span class="brand-mark" id="brand-icon"></span>siap<span style="color:var(--pink);margin-left:-10px">nikah</span></div><div class="nav-label">Ruang pernikahan</div><nav class="nav" id="nav" aria-label="Menu utama"></nav><div class="sidebar-footer"><p>Direncanakan bersama.<br>Disiapkan dengan tenang.</p></div></aside><main class="main"><header class="topbar"><button class="menu-toggle" id="menu-toggle" aria-label="Buka menu"></button><div class="breadcrumb"><span>Ruang pernikahan &nbsp; / &nbsp; </span><strong id="crumb">Ringkasan</strong></div><div class="topright"><span class="save-state" id="save-state" aria-live="polite">Memuat…</span><div class="avatar" id="avatar">SN</div></div></header><div class="content"><div id="mode-banner"></div><div id="view"></div><div class="footer-note">Siap Nikah · Ruang bersama untuk hari istimewa</div></div></main></div>
 <dialog class="modal" id="modal"><div class="modal-head"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Tutup">×</button></div><div class="modal-body" id="modal-body"></div></dialog><div class="toast" id="toast" role="status" hidden></div>
-<script>
+<script>window.WEDDING_CONFIG={"mode":"supabase-gateway","supabaseUrl":"https://bcqszjdvfswmvesknnks.supabase.co","supabasePublishableKey":"sb_publishable_dP2qI-3Zvxx0QS6n_R_6jQ_VjwJ-1uU","functionName":"wedding-gateway"};</script><script>
 /* Shared business rules for the Apps Script runtime, browser preview and tests. */
 var WeddingCore = (function () {
   'use strict';
@@ -186,7 +186,7 @@ const numberFormat=n=>{const value=Number(n||0);const digits=new Intl.NumberForm
 const money=n=>'<span class="accounting"><span class="currency">Rp</span><span class="amount">'+(Number(n||0)===0?'—':numberFormat(n))+'</span></span>';const $=id=>document.getElementById(id);
 const uuid=()=>crypto.randomUUID();const localToday=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const prettyDate=x=>x?new Intl.DateTimeFormat('id-ID',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Jakarta'}).format(new Date(x.length===10?x+'T12:00:00+07:00':x)):'Belum ditentukan';
-const live=!!(window.google&&google.script&&google.script.run);
+let live=!!(window.google&&google.script&&google.script.run);
 let db=C.blank(),route='dashboard',filter='',search='',busy=false,ready=false,loadFailed=false,email='',toastTimer,principal={owner:true,email:'utama@contoh.test',role:'Akun utama'};
 const labels={name:'Nama / judul',partner:'Nama pasangan',date:'Tanggal',location:'Lokasi',budget:'Anggaran keseluruhan (Rp)',target:'Target tabungan (Rp)',notes:'Catatan',category:'Kategori',amount:'Nominal (Rp)',owner:'Penanggung jawab',type:'Jenis',quantity:'Jumlah',status:'Status',contact:'Kontak',capacity:'Kapasitas (orang)',source:'Tautan sumber resmi',group:'Kelompok',event:'Acara',quota:'Kuota orang',attending:'Jumlah hadir',priority:'Prioritas',start:'Mulai',end:'Selesai'};
 const choices={category:['Venue','Katering','Dekorasi','Busana','Dokumentasi','Undangan','Administrasi','Seserahan','Mahar','Lainnya'],group:['Keluarga','Teman','Rekan kerja','Lainnya'],priority:['Normal','Tinggi']};
@@ -322,6 +322,7 @@ button:disabled{cursor:not-allowed}.button{min-height:44px;border-radius:11px;fo
 .metric strong:has(.accounting){font-size:clamp(13px,1.45vw,21px)}.metric small .accounting{font-size:inherit}
 @media(max-width:800px){.metric strong:has(.accounting){font-size:14px}.reception-dashboard .card-body{padding:14px}}
 @media(max-width:370px){.metric strong:has(.accounting){font-size:12px}}
+.login-shell{display:grid;place-items:center;min-height:70vh}.login-card{max-width:430px;width:100%;padding:30px}.login-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--tint);color:var(--pink);margin-bottom:20px}.login-eyebrow{font-size:10px;letter-spacing:1.5px;color:var(--pink);margin-bottom:12px}.login-card h1{font-family:Georgia,serif;font-size:31px;line-height:1.2}.login-card form{display:grid;gap:16px;margin-top:25px}.login-footnote{color:var(--muted);font-size:11px;margin-top:18px;text-align:center}.login-card .error{margin:0}.login-card #login-error:empty{display:none}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -643,6 +644,54 @@ const drawDocsBeforeExperience=drawDocs;drawDocs=function(){drawDocsBeforeExperi
 /* Illustrative reception entries belong to the session-only demo. */
 const demoBeforeExperience=demo;
 demo=function(){const data=demoBeforeExperience();const family=data.guests[0];if(family)family.attendanceLedger=JSON.stringify([{id:'demo-person-one',name:'Siti (contoh)',kind:'Uang',cash:250000,goods:''},{id:'demo-person-two',name:'Budi (contoh)',kind:'Barang',cash:0,goods:'1 set gelas'},{id:'demo-person-three',name:'Rina (contoh)',kind:'Uang & barang',cash:150000,goods:'1 selimut'},{id:'demo-person-four',name:'Dimas (contoh)',kind:'Tidak memberi',cash:0,goods:''}]);return data;};
+
+/* Public configuration contains only a project URL and publishable key. */
+const gatewayConfig=window.WEDDING_CONFIG||{mode:'preview'};
+const usingSupabaseGateway=gatewayConfig.mode==='supabase-gateway'&&!live;
+let gatewaySession=null,gatewayRefresh=null;
+const gatewaySessionKey='siapnikah-session:'+gatewayConfig.supabaseUrl;
+function validateGatewayConfig(){
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(gatewayConfig.supabaseUrl||''))throw new Error('URL project Supabase belum diisi dengan benar.');
+  const key=gatewayConfig.supabasePublishableKey||'';
+  if(!key||key.startsWith('sb_secret_'))throw new Error('Gunakan publishable / anon key untuk aplikasi.');
+  if(!key.startsWith('sb_publishable_')){try{const claims=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));if(claims.role!=='anon')throw new Error();}catch{throw new Error('Key aplikasi harus publishable atau anon, bukan service_role.');}}
+  if(!/^[a-z][a-z0-9-]*$/.test(gatewayConfig.functionName||''))throw new Error('Nama penghubung belum diisi.');
+}
+function storeGatewaySession(session){gatewaySession=session;try{if(session)sessionStorage.setItem(gatewaySessionKey,JSON.stringify(session));else sessionStorage.removeItem(gatewaySessionKey);}catch{}}
+async function gatewayAuth(path,body,token){
+  const response=await fetch(gatewayConfig.supabaseUrl+'/auth/v1/'+path,{method:body?'POST':'GET',headers:{apikey:gatewayConfig.supabasePublishableKey,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
+  let data;try{data=await response.json();}catch{throw new Error('Layanan login belum tersedia.');}
+  if(!response.ok)throw new Error(data.msg||data.error_description||data.message||'Login gagal. Periksa akun dan password.');
+  return data;
+}
+async function gatewayAccessToken(){
+  if(!gatewaySession?.access_token)throw new Error('Silakan masuk terlebih dahulu.');
+  if(gatewaySession.expires_at>Date.now()/1000+60)return gatewaySession.access_token;
+  if(!gatewayRefresh)gatewayRefresh=gatewayAuth('token?grant_type=refresh_token',{refresh_token:gatewaySession.refresh_token}).then(data=>{storeGatewaySession({...data,expires_at:Math.floor(Date.now()/1000)+data.expires_in});return data.access_token;}).catch(error=>{storeGatewaySession(null);throw error;}).finally(()=>gatewayRefresh=null);
+  return gatewayRefresh;
+}
+function gatewayLoginView(message){
+  ready=false;db=C.blank();principal={owner:false,email:'',role:'Belum masuk',permissions:{}};email='';status('Belum masuk');
+  $('nav').innerHTML='';$('bottom-nav')?.remove();$('mode-banner').innerHTML='';$('crumb').textContent='Masuk';$('avatar').textContent='SN';
+  $('view').innerHTML='<div class="login-shell"><section class="card login-card"><div class="login-mark">'+icon('heart')+'</div><p class="login-eyebrow">RUANG PERNIKAHAN KALIAN</p><h1>Siapkan hari bahagia.</h1><p class="subtitle">Masuk untuk membuka rencana, keuangan, dan buku tamu yang tersimpan.</p>'+(message?'<div class="error">'+esc(message)+'</div>':'')+'<form id="gateway-login"><div class="field"><label for="login-email">Email</label><input id="login-email" name="email" type="email" autocomplete="username" required></div><div class="field"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div><div id="login-error" role="alert"></div><button type="submit" class="button">Masuk ke ruang pernikahan</button></form><p class="login-footnote">Gunakan akun yang telah diaktifkan oleh pemilik aplikasi.</p></section></div>';
+  $('gateway-login').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector('button');button.disabled=true;try{validateGatewayConfig();const data=await gatewayAuth('token?grant_type=password',Object.fromEntries(new FormData(form)));storeGatewaySession({...data,expires_at:Math.floor(Date.now()/1000)+data.expires_in});form.reset();await reload();}catch(error){if($('login-error'))$('login-error').innerHTML='<div class="error">'+esc(error.message)+'</div>';}finally{if(button.isConnected)button.disabled=false;}};
+}
+function gatewayAccountButton(){
+  let button=$('gateway-signout');if(!button){button=document.createElement('button');button.id='gateway-signout';button.className='text-button';$('view').closest('main').querySelector('.topright').prepend(button);}
+  button.textContent=gatewaySession?'Keluar':'Masuk';button.onclick=async()=>{if(busy){toast('Tunggu penyimpanan selesai.');return;}if(gatewaySession){const token=gatewaySession.access_token;storeGatewaySession(null);db=C.blank();localFiles.clear();gatewayLoginView();gatewayAccountButton();try{await gatewayAuth('logout',{},token);}catch{}}else gatewayLoginView();};
+}
+if(usingSupabaseGateway){
+  live=true;principal={owner:false,email:'',role:'Belum masuk',permissions:{}};
+  try{validateGatewayConfig();const fragment=new URLSearchParams(location.hash.slice(1));if(fragment.get('access_token')&&fragment.get('refresh_token')){storeGatewaySession({access_token:fragment.get('access_token'),refresh_token:fragment.get('refresh_token'),expires_at:Math.floor(Date.now()/1000)+Number(fragment.get('expires_in')||3600)});history.replaceState(null,'',location.pathname+location.search);}else{const stored=sessionStorage.getItem(gatewaySessionKey);if(stored)gatewaySession=JSON.parse(stored);}}catch{}
+  rpc=async function(method,payload){
+    validateGatewayConfig();const token=await gatewayAccessToken();
+    const response=await fetch(gatewayConfig.supabaseUrl+'/functions/v1/'+gatewayConfig.functionName,{method:'POST',headers:{apikey:gatewayConfig.supabasePublishableKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({method,payload}),signal:AbortSignal.timeout(65000)});
+    let data;try{data=await response.json();}catch{throw new Error('Penghubung belum tersedia.');}
+    if(!response.ok){if(response.status===401)storeGatewaySession(null);throw new Error(data.error||'Penyimpanan belum berhasil.');}return data;
+  };
+  const reloadBeforeGateway=reload;reload=async function(){try{validateGatewayConfig();if(!gatewaySession){gatewayLoginView();gatewayAccountButton();return;}await reloadBeforeGateway();gatewayAccountButton();}catch(error){gatewayLoginView(error.message);gatewayAccountButton();}};
+  const renderBeforeGateway=render;render=function(){if(!gatewaySession){gatewayLoginView();gatewayAccountButton();return;}renderBeforeGateway();gatewayAccountButton();};
+}
 
 reload();
 </script>
