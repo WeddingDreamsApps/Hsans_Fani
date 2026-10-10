@@ -396,6 +396,97 @@ body:has(#gateway-login) .sidebar,body:has(#gateway-login) .topbar,body:has(#gat
 @media(max-height:650px) and (min-width:801px){#view .login-shell{padding-top:28px;padding-bottom:28px}#view .login-card{padding:25px}}
 html[data-theme="dark"] body{background-image:linear-gradient(180deg,rgba(9,19,29,.55),rgba(6,17,25,.83)),url("mountain-sunset.png");background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed}html[data-theme="dark"] .sidebar,html[data-theme="dark"] .topbar{background:rgba(12,24,34,.88);backdrop-filter:blur(18px)}html[data-theme="dark"] .card:not(.login-card),html[data-theme="dark"] .metric,html[data-theme="dark"] .doc-row,html[data-theme="dark"] .user-card{background:rgba(16,30,45,.86);backdrop-filter:blur(12px);border-color:rgba(220,233,241,.13);box-shadow:0 8px 30px #00000018}html[data-theme="dark"] .workflow-tile{background:rgba(9,22,34,.7)}html[data-theme="dark"] .footer-note{color:#ced5db}html[data-theme="dark"] .modal-head{background:var(--white)}@media(max-width:800px){html[data-theme="dark"] body{background-position:38% center}}
 
+/* Shared dark surfaces; the scenic login keeps its own warm palette. */
+html[data-theme="dark"]{--pink:#8adbc5;--pink-dark:#68c6ae;--green:#8adbc5;--tint:#203c3c;--ink:#edf3f4;--muted:#b3c2ca;--line:#354955;--white:#162631;--bg:#0b1720}
+html[data-theme="dark"] body{background-image:linear-gradient(180deg,#09131dd9,#061119ed),url("mountain-sunset.png")}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.card,.metric,.doc-row,.user-card){background:rgba(22,38,49,.95);border-color:var(--line)}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.sidebar,.topbar,.bottom-nav){background:rgba(13,27,36,.97);border-color:var(--line)}
+html[data-theme="dark"] :is(.sidebar-footer p,.metric small,.subtitle,.task-info small,.doc-description p,.sources,.attachment-counter,.footer-note,.nav-label){color:var(--muted)}
+html[data-theme="dark"] :is(.table td strong,.table td h3,.task-info strong,.donut span,.banner strong){color:var(--ink)}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.button:not(.secondary):not(.danger)){background:#8adbc5;color:#102d29;border-color:#8adbc5;box-shadow:none}
+html[data-theme="dark"] :is(.metric-icon,.avatar,.role-chip,.user-access span){background:var(--tint);color:var(--pink);border-color:var(--line);box-shadow:none}
+html[data-theme="dark"] .brand-mark{background:#8adbc5;color:#102d29;box-shadow:none}
+html[data-theme="dark"] :is(.button.secondary,.doc-edit-icon,.compact-edit,.table button.edit,.doc-attachment,.quick-actions button,.menu-grid button,.concept-theme,.sidebar-mode,#sidebar-restore){background:#203440;color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] :is(.text-button,.sources a,.shop-link,.sidebar-footer button){color:var(--pink)}
+html[data-theme="dark"] .segmented{background:#12242e;border:1px solid var(--line)}
+html[data-theme="dark"] .segmented button{color:var(--muted);background:transparent;border-color:transparent;box-shadow:none}
+html[data-theme="dark"] .segmented button.selected,html[data-theme="dark"] .user-workspace-head [aria-selected="true"]{background:var(--tint);color:#a5e8d5;border-color:#4c776d}
+html[data-theme="dark"] .segmented #load-kua-template{background:#203440;color:#a5e8d5;border:1px solid var(--line)}
+html[data-theme="dark"] :is(.bottom-nav button,.sidebar #nav button){color:var(--muted)}
+html[data-theme="dark"] .bottom-nav button.active{background:var(--tint);color:var(--pink)}
+html[data-theme="dark"] :is(.notice,.role-alert,.alert-strip,.new-budget-proof,.attendee-row,.invitation-preview,.upload-area,.incomplete,.banner,.workflow-link){background:#1c323d;color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] :is(.table th,.table tbody tr:hover){background:#1e3340;color:#bccbd3}
+html[data-theme="dark"] :is(.card-head,.line-stat,.gift-controls,.table td,.table th,.permission-row,.modal-head,.attachments){border-color:var(--line)}
+html[data-theme="dark"] .progress{background:#304752}html[data-theme="dark"] .progress i{background:var(--pink)}
+html[data-theme="dark"] .donut{background:conic-gradient(var(--pink) calc(var(--pct)*1%),#304752 0)}html[data-theme="dark"] .donut:after{background:var(--white)}
+html[data-theme="dark"] .hero{background:linear-gradient(115deg,#1d4142,#244a4d 65%,#294251)}
+html[data-theme="dark"] .hero :is(p,small,.hero-meta,.countdown span){color:#d0e4df}
+html[data-theme="dark"] .badge.pink{background:#433240;color:#f1c4dc}
+html[data-theme="dark"] .badge.green{background:#203e35;color:#a5e8c6}
+html[data-theme="dark"] .badge.amber{background:#423a26;color:#f4d99d}
+html[data-theme="dark"] .warning-text{color:#f4d99d}
+html[data-theme="dark"] body:not(:has(#gateway-login)) .error{background:#452d34;color:#ffd4da}
+html[data-theme="dark"] .button.danger{background:#452d34;color:#ffd4da;border-color:#77515c}
+html[data-theme="dark"] :is(input,select,textarea)::placeholder{color:#a4b5bf;opacity:1}
+html[data-theme="dark"] :is(input,select,textarea):focus{outline:2px solid #8adbc5;outline-offset:2px}
+html[data-theme="dark"] input[type="checkbox"]{accent-color:#8adbc5}
+html[data-theme="dark"] :is(.read-only input,.read-only textarea,.read-only select){background:#1b2c36;color:var(--muted)}
+html[data-theme="dark"] .toast{background:#203c3c;color:var(--ink);border:1px solid #4c776d}
+@media(max-width:800px){
+  .topbar>.page-head{min-width:0;flex:1}.topbar>.page-head h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .content,.card-body,.modal-body,.user-workspace-pane{min-width:0}.content{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .toolbar,.user-toolbar,.form-grid,.metrics{min-width:0}.toolbar>*{max-width:100%}.toolbar .search{min-width:0}
+  .modal{max-height:calc(100dvh - 24px);max-width:calc(100vw - 20px)}.modal-body{overflow-wrap:anywhere}
+  .field{min-width:0}.field :is(input,select,textarea){max-width:100%;font-size:16px}
+  .bottom-nav{padding:4px 5px max(7px,env(safe-area-inset-bottom));box-shadow:0 -4px 20px #0002}.bottom-nav button{min-height:44px}
+  html[data-theme="dark"] body{background-attachment:scroll}
+}
+
+/* Palette from AINDEX's final “TEMA ELEGAN (navy-royal + teal kalem)” block. */
+:root{--pink:#3558c8;--pink-dark:#2b46a3;--green:#2c7669;--tint:#eef2fc;--ink:#0f172a;--muted:#64748b;--line:#e6e9f1;--white:#fff;--bg:#f5f7fb}
+html[data-theme="dark"]{--pink:#a2bcf6;--pink-dark:#4c73e1;--green:#8ccbbd;--tint:#1e293b;--ink:#f8fafc;--muted:#cbd5e1;--line:#28354b;--white:#111a2e;--bg:#0b1122}
+html:not([data-theme="dark"]) body:not(:has(#gateway-login)){background:radial-gradient(1100px 520px at 0% -10%,#3558c812,transparent 60%),radial-gradient(900px 480px at 100% 0%,#2c76690f,transparent 60%),#f5f7fb;color:#0f172a}
+html[data-theme="dark"] body:not(:has(#gateway-login)){background:radial-gradient(1100px 520px at 0% -10%,#4c73e11a,transparent 60%),radial-gradient(900px 480px at 100% 0%,#3b928112,transparent 60%),#0b1122;color:#f8fafc}
+html:not([data-theme="dark"]) body:not(:has(#gateway-login)) :is(.card,.metric,.doc-row,.user-card){background:#fff;border-color:#e6e9f1;backdrop-filter:none;box-shadow:0 1px 2px #1018280a,0 6px 20px -12px #1018281a}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.card,.metric,.doc-row,.user-card){background:rgba(17,26,46,.88);border-color:#94a3b81f;box-shadow:0 10px 30px -14px #0009}
+html:not([data-theme="dark"]) body:not(:has(#gateway-login)) :is(.sidebar,.topbar,.bottom-nav){background:#fff;border-color:var(--line)}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.sidebar,.topbar,.bottom-nav){background:#0e1629;border-color:#94a3b81a}
+body:not(:has(#gateway-login)) .button:not(.secondary):not(.danger){background:linear-gradient(180deg,#3d63d6,#3053bf);color:#fff;border-color:transparent;box-shadow:0 6px 14px -8px #3558c8cc}
+body:not(:has(#gateway-login)) .button:not(.secondary):not(.danger):hover{background:linear-gradient(180deg,#3558c8,#2b46a3)}
+body:not(:has(#gateway-login)) :is(.button.secondary,.doc-edit-icon,.compact-edit,.table button.edit,.doc-attachment,.quick-actions button,.menu-grid button,.concept-theme,.sidebar-mode,#sidebar-restore){background:#94a3b824;color:#475569;border-color:var(--line)}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.button.secondary,.doc-edit-icon,.compact-edit,.table button.edit,.doc-attachment,.quick-actions button,.menu-grid button,.concept-theme,.sidebar-mode,#sidebar-restore){background:#94a3b81f;color:#cbd5e1;border-color:var(--line)}
+.metric-icon,.avatar,.role-chip,.user-access span{background:#3558c814;color:#3558c8;border-color:var(--line);box-shadow:none}
+html[data-theme="dark"] :is(.metric-icon,.avatar,.role-chip,.user-access span){background:#7497ee1f;color:#a2bcf6;border-color:var(--line)}
+.brand-mark,html[data-theme="dark"] .brand-mark{background:linear-gradient(180deg,#3d63d6,#3053bf);color:#fff}
+.sidebar #nav button.active{background:#3558c817;color:#3558c8;border-color:transparent}
+html[data-theme="dark"] .sidebar #nav button.active{background:#3558c817;color:#a2bcf6;border-color:transparent}
+.bottom-nav button.active{background:#3558c817;color:#3558c8}html[data-theme="dark"] .bottom-nav button.active{background:#3558c824;color:#a2bcf6}
+.segmented{background:#94a3b826;border:1px solid transparent}.segmented button{color:#64748b;background:transparent;box-shadow:none}
+.segmented button.selected,.user-workspace-head [aria-selected="true"]{background:#fff;color:#3558c8;border-color:transparent}
+html[data-theme="dark"] .segmented{background:#94a3b81a;border-color:transparent}
+html[data-theme="dark"] .segmented button{color:#cbd5e1}
+html[data-theme="dark"] .segmented button.selected,html[data-theme="dark"] .user-workspace-head [aria-selected="true"]{background:#1e293b;color:#a2bcf6;border-color:transparent}
+.segmented #load-kua-template{background:#3558c80d;color:#3558c8;border:1px solid #e6e9f1}
+html[data-theme="dark"] .segmented #load-kua-template{background:#7497ee1f;color:#a2bcf6;border-color:#28354b}
+.table th{background:#f7f9fc;color:#475569}html[data-theme="dark"] .table th{background:#0f1830;color:#94a3b8}
+.table td strong,.table td h3,.task-info strong{color:var(--ink)}
+.table tbody tr:hover{background:#f2f6ff}html[data-theme="dark"] .table tbody tr:hover{background:#4c73e114;color:var(--ink)}
+body:not(:has(#gateway-login)) :is(input,select,textarea){background:#fff;border-color:#dfe4ee;color:#334155}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(input,select,textarea){background:#0f172a;border-color:#334155;color:#cbd5e1}
+body:not(:has(#gateway-login)) :is(input,select,textarea):focus{outline:2px solid #3558c8;outline-offset:2px;box-shadow:0 0 0 3px #3558c824}
+input[type="checkbox"]{accent-color:#3558c8}.progress i,html[data-theme="dark"] .progress i{background:linear-gradient(90deg,#4c73e1,#3b9281)}
+.hero,html[data-theme="dark"] .hero{background:linear-gradient(115deg,#223965,#3558a0 65%,#2c7669)}
+.hero :is(p,small,.hero-meta,.countdown span){color:#e2e8f0}
+.notice,.role-alert,.alert-strip,.new-budget-proof,.attendee-row,.upload-area,.workflow-link{background:#f7f9fc;color:#334155;border-color:var(--line)}
+html[data-theme="dark"] :is(.notice,.role-alert,.alert-strip,.new-budget-proof,.attendee-row,.upload-area,.workflow-link){background:#0f172a;color:#cbd5e1;border-color:#334155}
+.upload-area{border-color:#3558c859;background:#3558c809}html[data-theme="dark"] .upload-area{border-color:#7497ee59;background:#4c73e10d}
+.sources a{color:#3558c8}html[data-theme="dark"] .sources a{color:#a2bcf6}
+html[data-theme="dark"] .field label{color:#cbd5e1}
+html[data-theme="dark"] .donut{background:conic-gradient(#4c73e1 calc(var(--pct)*1%),#28354b 0)}
+html[data-theme="dark"] .toast{background:#1e293b;color:#f1f5f9;border-color:#ffffff1f}
+html[data-theme="dark"] .button.danger{background:#f43f5e1a;color:#fb7185;border-color:#f43f5e33}
+@media print{html body:not(:has(#gateway-login)){background:#fff;color:#0f172a}}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
