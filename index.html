@@ -621,6 +621,10 @@ const editBeforeExperience=edit;
 edit=function(key,record){
   editBeforeExperience(key,record);const form=$('edit-form');if(!form)return;
   if(key==='guests'&&record){const button=document.createElement('button');button.type='button';button.className='button secondary';button.textContent='Catat kehadiran & pemberian';button.onclick=()=>receptionModal(record);form.querySelector('.modal-foot').before(button);}
+  if(key==='admin'&&!record&&C.can(principal,key,true)){
+    const box=document.createElement('section');box.className='new-budget-proof';box.innerHTML='<div class="field"><label for="new-admin-file">Upload dokumen KUA (opsional)</label><input id="new-admin-file" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"><small>PDF, Word, JPG atau PNG · maksimal 5 MB. Berkas diunggah setelah persyaratan tersimpan.</small></div>';form.querySelector('.modal-foot').before(box);
+    const submit=form.onsubmit;form.onsubmit=async event=>{const file=$('new-admin-file').files[0];if(file&&(file.size>5*1024*1024||! /\.(pdf|docx?|jpe?g|png)$/i.test(file.name))){event.preventDefault();$('form-error').innerHTML='<div class="error">Pilih PDF, Word, JPG atau PNG maksimal 5 MB.</div>';return;}await submit(event);if($('modal').open)return;const saved=db.admin.find(x=>x.id===form.dataset.recordId);if(!saved)return;edit('admin',saved);if(file){const input=$('attachment'),transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;await input.onchange({target:input});}};
+  }
   if(key!=='budget'||record||!C.can(principal,key,true))return;
   const box=document.createElement('section');box.className='new-budget-proof';box.innerHTML='<label class="paid-now"><input type="checkbox" name="paidNow"> Sudah dibayar lunas — catat sebagai pengeluaran</label><div class="field"><label>Sumber pembayaran</label><select name="initialSource"><option>Dana lain</option><option>Tabungan</option></select></div><div class="field"><label for="new-budget-file">Invoice / nota (opsional)</label><input id="new-budget-file" type="file" accept=".pdf,.jpg,.jpeg,.png"><small>PDF, JPG atau PNG · maksimal 5 MB. Berkas diunggah setelah item biaya tersimpan.</small></div>';
   form.querySelector('.modal-foot').before(box);
@@ -636,10 +640,17 @@ edit=function(key,record){
     if(file){const input=$('attachment');const transfer=new DataTransfer();transfer.items.add(file);input.files=transfer.files;await input.onchange({target:input});}
   };
 };
-const renderBeforeExperience=render;render=function(){renderBeforeExperience();if(ready){guestLedgerSummary();dashboardReception();paginate();polishTables();accountingInputs();}};
-const drawRowsBeforeExperience=drawRows;drawRows=function(){drawRowsBeforeExperience();guestLedgerSummary();paginate();polishTables();accountingInputs();};
+function visibleUploadActions(){
+  if(!['budget','admin'].includes(route)||!C.can(principal,route,true))return;
+  const root=$('view');root.querySelectorAll(route==='budget'?'[data-edit]':'[data-doc-edit]').forEach(detail=>{
+    const id=route==='budget'?detail.dataset.edit:detail.dataset.docEdit,record=db[route].find(x=>x.id===id);if(!record||detail.parentElement.querySelector('[data-upload-record]'))return;
+    const button=document.createElement('button');button.type='button';button.className='button secondary';button.dataset.uploadRecord=id;button.textContent=route==='budget'?'Upload invoice / nota':'Upload dokumen';button.onclick=()=>{edit(route,record);$('attachments')?.scrollIntoView({block:'nearest',behavior:'smooth'});$('attachment')?.focus();};detail.after(button);
+  });
+}
+const renderBeforeExperience=render;render=function(){renderBeforeExperience();if(ready){guestLedgerSummary();dashboardReception();visibleUploadActions();paginate();polishTables();accountingInputs();}};
+const drawRowsBeforeExperience=drawRows;drawRows=function(){drawRowsBeforeExperience();guestLedgerSummary();visibleUploadActions();paginate();polishTables();accountingInputs();};
 const drawGiftsBeforeExperience=drawGifts;drawGifts=function(){drawGiftsBeforeExperience();paginate();};
-const drawDocsBeforeExperience=drawDocs;drawDocs=function(){drawDocsBeforeExperience();paginate();};
+const drawDocsBeforeExperience=drawDocs;drawDocs=function(){drawDocsBeforeExperience();visibleUploadActions();paginate();};
 
 /* Illustrative reception entries belong to the session-only demo. */
 const demoBeforeExperience=demo;
