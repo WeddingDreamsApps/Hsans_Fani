@@ -335,6 +335,8 @@ button:disabled{cursor:not-allowed}.button{min-height:44px;border-radius:11px;fo
 
 .sidebar .brand{display:flex;align-items:center;gap:9px;padding:0 4px 23px;font-size:21px;white-space:nowrap}.sidebar .brand>.sidebar-mode{margin-left:auto;width:30px;height:30px;flex:0 0 30px}.sidebar .brand-mark{width:34px;height:34px;flex:0 0 34px;border-radius:11px}.sidebar .nav-label{padding:0 10px 12px;font-size:10px;letter-spacing:1.3px}.sidebar #nav{gap:4px}.sidebar #nav button{min-height:42px;padding:10px 12px}.sidebar .sidebar-footer{padding-top:18px}@media(min-width:801px){body[data-sidebar-mode="1"] .sidebar .brand{flex-direction:column;gap:12px;font-size:0;padding:0 0 20px}body[data-sidebar-mode="1"] .sidebar .brand>.sidebar-mode{margin:0}body[data-sidebar-mode="2"] .sidebar>.brand{display:flex;font-size:0;padding:0;gap:0}body[data-sidebar-mode="2"] .sidebar .brand-mark{display:none}body[data-sidebar-mode="2"] .sidebar .brand>.sidebar-mode{margin:0}body[data-sidebar-mode="2"] .sidebar>.brand~*{display:none}}
 
+.topbar{height:64px;gap:16px}.topbar>.breadcrumb{display:none}.topbar>.page-head{display:flex;align-items:center;gap:16px;flex:1;min-width:0;margin:0}.topbar>.page-head h1{font-size:20px;letter-spacing:-.5px;white-space:nowrap}.topbar>.page-head .subtitle{display:none}.topbar>.page-head .button{min-height:36px;padding:7px 12px;font-size:12px}.topbar .save-state{display:none}.content{padding-top:20px}@media(max-width:800px){.topbar{height:58px;padding:0 12px;gap:8px}.topbar>.page-head{gap:8px}.topbar>.page-head h1{font-size:15px;overflow:hidden;text-overflow:ellipsis;max-width:45vw}.topbar>.page-head .button{min-height:32px;padding:6px 8px;font-size:11px}.topbar .topright{gap:8px}.topbar .topright .avatar{display:none}.topbar #gateway-signout{font-size:11px}}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -681,6 +683,9 @@ const renderBeforeCompact=render;render=function(){renderBeforeCompact();compact
 const rowsBeforeCompact=drawRows;drawRows=function(){rowsBeforeCompact();compactNavigation();};
 const giftsBeforeCompact=drawGifts;drawGifts=function(){giftsBeforeCompact();compactNavigation();};
 compactNavigation();
+
+function singleHeader(){const top=document.querySelector('.topbar'),head=document.querySelector('#view .page-head');if(!top||!head)return;top.querySelector('.page-head')?.remove();top.prepend(head);}
+const renderBeforeSingleHeader=render;render=function(){renderBeforeSingleHeader();singleHeader();};
 
 /* Public configuration contains only a project URL and publishable key. */
 const gatewayConfig=window.WEDDING_CONFIG||{mode:'preview'};
