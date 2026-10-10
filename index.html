@@ -490,9 +490,47 @@ html[data-theme="dark"] .toast{background:#1e293b;color:#f1f5f9;border-color:#ff
 html[data-theme="dark"] .button.danger{background:#f43f5e1a;color:#fb7185;border-color:#f43f5e33}
 @media print{html body:not(:has(#gateway-login)){background:#fff;color:#0f172a}}
 
-#view .gift-sheet-wrap{overflow:hidden}#view .gift-sheet-table{display:table!important;width:100%;table-layout:fixed}#view .gift-sheet-table thead{display:table-header-group!important}#view .gift-sheet-table tbody{display:table-row-group!important}#view .gift-sheet-table tr{display:table-row!important;margin:0;padding:0;border:0;box-shadow:none}#view .gift-sheet-table :is(th,td){display:table-cell!important;padding:10px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;vertical-align:middle}#view .gift-sheet-table td:before,#view .gift-sheet-table td:after{display:none!important}#view .gift-sheet-table th:nth-child(1){width:4%}#view .gift-sheet-table th:nth-child(2){width:12%}#view .gift-sheet-table th:nth-child(3){width:16%}#view .gift-sheet-table th:nth-child(4){width:16%}#view .gift-sheet-table th:nth-child(5){width:13%}#view .gift-sheet-table th:nth-child(6){width:10%}#view .gift-sheet-table th:nth-child(7){width:12%}#view .gift-sheet-table th:nth-child(8){width:5%}#view .gift-sheet-table th:nth-child(9){width:8%}#view .gift-sheet-table th:last-child{width:4%}#view .gift-sheet-table td strong{font-size:11px}#view .gift-sheet-table .accounting{display:flex;gap:4px;font-size:11px;min-width:0}#view .gift-sheet-table .badge{font-size:9px;padding:3px 5px}#view .gift-sheet-table .doc-edit-icon{width:28px;min-height:28px;padding:4px;border-radius:8px}.gift-shop{color:var(--pink);text-decoration:none;font-size:11px}.gift-shop:hover{text-decoration:underline}.gift-progress{display:block;height:5px;width:100%;background:var(--line);border-radius:4px;overflow:hidden}.gift-progress i{display:block;height:100%;background:linear-gradient(90deg,#4c73e1,#3b9281)}
-@media(max-width:800px){#view .gift-sheet-table :is(th,td){padding:9px 5px;font-size:10px}#view .gift-sheet-table :is(th,td):nth-child(1),#view .gift-sheet-table :is(th,td):nth-child(2),#view .gift-sheet-table :is(th,td):nth-child(4),#view .gift-sheet-table :is(th,td):nth-child(8),#view .gift-sheet-table :is(th,td):nth-child(9){display:none!important}#view .gift-sheet-table th:nth-child(3){width:30%}#view .gift-sheet-table th:nth-child(5){width:22%}#view .gift-sheet-table th:nth-child(6){width:15%}#view .gift-sheet-table th:nth-child(7){width:24%}#view .gift-sheet-table th:last-child{width:9%}#view .gift-sheet-table :is(td strong,.accounting,.gift-shop){font-size:10px}#view .gift-sheet-table .badge{font-size:8px;padding:3px}#view .gift-sheet-table .doc-edit-icon{width:26px;min-height:28px}.gift-summary-three .metric-top{font-size:10px}.gift-summary-three .metric strong{font-size:16px}.gift-summary-three .metric-icon{display:none}}
-#view .gift-sheet-table tr[hidden]{display:none!important}@media(max-width:800px){#view .gift-sheet-table td{padding:6px 5px}}
+#view .gift-sheet-wrap{overflow:hidden}
+#view .gift-sheet-table{display:table!important;width:100%;table-layout:fixed}
+#view .gift-sheet-table thead{display:table-header-group!important}
+#view .gift-sheet-table tbody{display:table-row-group!important}
+#view .gift-sheet-table tr{display:table-row!important;margin:0;padding:0;border:0;box-shadow:none}
+#view .gift-sheet-table tr[hidden]{display:none!important}
+#view .gift-sheet-table :is(th,td){display:table-cell!important;padding:10px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;vertical-align:middle}
+#view .gift-sheet-table td:before,#view .gift-sheet-table td:after{display:none!important}
+#view .gift-sheet-table th:nth-child(1){width:52%}
+#view .gift-sheet-table th:nth-child(2){width:14%;text-align:right}
+#view .gift-sheet-table th:nth-child(3){width:13%}
+#view .gift-sheet-table th:nth-child(4){width:13%}
+#view .gift-sheet-table th:last-child{width:8%}
+#view .gift-sheet-table td.gift-price{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--font-mono,monospace)}
+.gift-item-line{display:flex;align-items:center;gap:12px;min-width:0}
+.gift-category{flex:0 0 125px;color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis}
+#view .gift-item-line strong{flex:0 1 auto;font-size:12px;overflow:hidden;text-overflow:ellipsis}
+.gift-detail{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:11px}
+.gift-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+#view .gift-sheet-table .doc-edit-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;min-height:30px;padding:5px;border-radius:8px;flex-shrink:0}
+.gift-shop{text-decoration:none;color:var(--pink)}
+.gift-shop svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#view .gift-sheet-table .badge{font-size:10px;padding:4px 6px}
+@media(max-width:800px){
+#view .gift-sheet-table :is(th,td){padding:8px 5px;font-size:10px}
+#view .gift-sheet-table :is(th,td):nth-child(4){display:none!important}
+#view .gift-sheet-table th:nth-child(1){width:44%}
+#view .gift-sheet-table th:nth-child(2){width:19%}
+#view .gift-sheet-table th:nth-child(3){width:20%}
+#view .gift-sheet-table th:last-child{width:17%}
+.gift-item-line{display:grid;gap:3px}
+.gift-category{font-size:9px}
+#view .gift-item-line strong{font-size:11px}
+.gift-detail{font-size:9px}
+.gift-actions{gap:3px}
+#view .gift-sheet-table .doc-edit-icon{width:25px;min-height:30px;padding:4px}
+#view .gift-sheet-table .badge{font-size:8px;padding:3px}
+.gift-summary-three .metric-top{font-size:10px}
+.gift-summary-three .metric strong{font-size:16px}
+.gift-summary-three .metric-icon{display:none}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1072,7 +1110,7 @@ giftsPage=function(){
 };
 drawGifts=function(){
   const rows=db.gifts.filter(row=>(giftsType==='Semua'||row.type===giftsType)&&(!search||[row.name,row.itemGroup,...Object.values(GiftSheet.details(row))].join(' ').toLowerCase().includes(search.toLowerCase())));
-  $('gift-groups').innerHTML='<div class="card gift-sheet-wrap"><table class="table gift-sheet-table" id="gift-sheet-table"><thead><tr>'+['No','Kategori','Item Seserahan','Detail / Keterangan','Estimasi Harga','Vendor / Toko','Status','Progres','Catatan',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const meta=GiftSheet.details(row),stateValue=GiftSheet.state(row);return '<tr class="gift-card" data-row-id="'+esc(row.id)+'"><td>'+esc(meta.number||index+1)+'</td><td title="'+esc(row.itemGroup)+'">'+esc(row.itemGroup)+'</td><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong></td><td title="'+esc(meta.detail)+'">'+esc(meta.detail||'—')+'</td><td>'+money(row.amount)+'</td><td>'+(row.shopUrl?'<a class="gift-shop" href="'+esc(row.shopUrl)+'" target="_blank" rel="noopener noreferrer" title="Buka link pembelian '+esc(row.name)+'">'+esc(meta.vendor||'Lihat barang')+' ↗</a>':esc(meta.vendor||'—'))+'</td><td><span class="badge '+(stateValue==='Sudah disiapkan'?'green':stateValue==='Dalam Proses'?'amber':'')+'">'+esc(stateValue)+'</span></td><td><span class="gift-progress" aria-label="Progres '+GiftSheet.progress(row)+' persen"><i style="width:'+GiftSheet.progress(row)+'%"></i></span></td><td title="'+esc(meta.note)+'">'+esc(meta.note||'—')+'</td><td><button class="doc-edit-icon" data-edit-gift="'+esc(row.id)+'" title="Edit '+esc(row.name)+'" aria-label="Edit '+esc(row.name)+'">'+icon('edit')+'</button></td></tr>';}).join('')+'</tbody></table>'+(!rows.length?'<div class="empty"><h3>Belum ada barang</h3><p>Tambahkan barang atau impor daftar seserahan dari CSV.</p></div>':'')+'</div>';
+  $('gift-groups').innerHTML='<div class="card gift-sheet-wrap"><table class="table gift-sheet-table" id="gift-sheet-table"><thead><tr>'+['Kategori','Estimasi harga','Status','Catatan',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>{const meta=GiftSheet.details(row),stateValue=GiftSheet.state(row);return '<tr class="gift-card" data-row-id="'+esc(row.id)+'"><td><div class="gift-item-line"><span class="gift-category">'+esc(row.itemGroup)+'</span><strong>'+esc(row.name)+'</strong>'+(meta.detail?'<span class="gift-detail" title="'+esc(meta.detail)+'">'+esc(meta.detail)+'</span>':'')+'</div></td><td class="gift-price">'+numberFormat(row.amount)+'</td><td><span class="badge '+(stateValue==='Sudah disiapkan'?'green':stateValue==='Dalam Proses'?'amber':'')+'">'+esc(stateValue)+'</span></td><td title="'+esc(meta.note)+'">'+esc(meta.note||'—')+'</td><td><div class="gift-actions">'+(row.shopUrl?'<a class="gift-shop doc-edit-icon" href="'+esc(row.shopUrl)+'" target="_blank" rel="noopener noreferrer" title="'+esc(meta.vendor||'Buka toko')+' · '+esc(row.name)+'" aria-label="Buka toko '+esc(row.name)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l2-5h14l2 5M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M5 12v8h14v-8M9 20v-6h6v6"/></svg></a>':'')+'<button class="doc-edit-icon" data-edit-gift="'+esc(row.id)+'" title="Edit '+esc(row.name)+'" aria-label="Edit '+esc(row.name)+'">'+icon('edit')+'</button></div></td></tr>';}).join('')+'</tbody></table>'+(!rows.length?'<div class="empty"><h3>Belum ada barang</h3><p>Tambahkan barang atau impor daftar seserahan dari CSV.</p></div>':'')+'</div>';
   document.querySelectorAll('[data-edit-gift]').forEach(button=>button.onclick=()=>edit('gifts',db.gifts.find(row=>row.id===button.dataset.editGift)));paginate();
 };
 const editBeforeGiftSheet=edit;edit=function(key,record){editBeforeGiftSheet(key,record);if(key!=='gifts'||!$('edit-form'))return;const meta=GiftSheet.details(record),form=$('edit-form'),grid=form.querySelector('.form-grid');
