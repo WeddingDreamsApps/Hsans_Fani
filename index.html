@@ -534,6 +534,31 @@ html[data-theme="dark"] .button.danger{background:#f43f5e1a;color:#fb7185;border
 .gift-item-line{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.gift-category{flex:none;font-size:10px}.gift-detail{flex:none;max-width:100%;font-size:11px}#view .gift-item-line strong{flex:none;max-width:100%;font-size:12px}@media(max-width:800px){.gift-category{font-size:9px}.gift-detail{font-size:9px}#view .gift-item-line strong{font-size:11px}}
 #view .gift-sheet-wrap{width:100%;max-width:900px}#view .gift-sheet-table th:nth-child(1){width:43%}#view .gift-sheet-table th:nth-child(2){width:16%}#view .gift-sheet-table th:nth-child(3){width:16%}#view .gift-sheet-table th:nth-child(4){width:15%}#view .gift-sheet-table th:last-child{width:10%}#view .gift-sheet-table :is(th,td){padding:8px 10px}#view .gift-sheet-table th:nth-child(2),#view .gift-sheet-table td.gift-price{text-align:left}@media(max-width:800px){#view .gift-sheet-wrap{max-width:none}#view .gift-sheet-table :is(th,td){padding:8px 5px}#view .gift-sheet-table th:nth-child(1){width:44%}#view .gift-sheet-table th:nth-child(2){width:19%}#view .gift-sheet-table th:nth-child(3){width:20%}#view .gift-sheet-table th:last-child{width:17%}}
 #view:has(.gift-sheet-table){max-width:948px;margin-inline:auto}#view .gift-sheet-wrap{max-width:none}
+/* Comfortable reading size and restrained color accents. */
+#view .gift-sheet-table :is(th,td){font-size:14px;padding:12px 14px}
+#view .gift-sheet-table th{font-size:12px;color:#365bb4;background:#eef3ff;letter-spacing:.025em}
+#view .gift-item-line strong{font-size:16px;line-height:1.4}
+.gift-item-line{gap:5px}
+.gift-category{font-size:12px;line-height:1.5;color:#3865bd;background:#edf3ff;border-radius:5px;padding:1px 6px}
+.gift-detail{font-size:13px;line-height:1.5}
+#view .gift-sheet-table .badge{font-size:12px;padding:5px 8px}
+#view .gift-sheet-table .gift-price{font-size:15px;font-weight:600}
+#view .gift-sheet-table .gift-actions .gift-shop{color:#237d70;background:#e8f5f1}
+#view .gift-sheet-table .gift-actions button{color:#365db9;background:#edf2ff}
+#view .gift-sheet-table tr:hover td{background:rgba(74,110,206,.045)}
+[data-theme="dark"] #view .gift-sheet-table th{background:#172641;color:#b6caff}
+[data-theme="dark"] .gift-category{background:#1b2d4c;color:#b1c9fa}
+[data-theme="dark"] #view .gift-sheet-table .gift-actions .gift-shop{background:#173a36;color:#a4dfd1}
+[data-theme="dark"] #view .gift-sheet-table .gift-actions button{background:#203354;color:#bfd0ff}
+@media(max-width:800px){
+#view .gift-sheet-table :is(th,td){font-size:12px;padding:10px 5px}
+#view .gift-sheet-table th{font-size:10px}
+#view .gift-item-line strong{font-size:14px}
+.gift-category{font-size:10px;padding:1px 4px}
+.gift-detail{font-size:11px}
+#view .gift-sheet-table .gift-price{font-size:12px}
+#view .gift-sheet-table .badge{font-size:10px;padding:4px 3px}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
