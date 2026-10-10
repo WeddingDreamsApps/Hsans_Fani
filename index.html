@@ -583,6 +583,37 @@ html[data-theme="dark"] .gift-purchase-track{background:#25334c}
 html[data-theme="dark"] #view .gift-summary-two .metric{background:#172641!important;border-color:#2d4269}
 html[data-theme="dark"] #view .gift-summary-two .metric-icon{background:#243a60;color:#bfd0ff}
 #edit-form .field[hidden]{display:none!important}
+#modal:has([data-gift-editor]){width:min(620px,calc(100vw - 24px));max-height:90dvh}
+#modal:has([data-gift-editor]) .modal-head{padding:14px 18px}
+#modal:has([data-gift-editor]) .modal-body{padding:16px 18px}
+#edit-form[data-gift-editor] .form-grid{gap:10px 12px}
+#edit-form[data-gift-editor] .field{gap:4px;min-width:0}
+#edit-form[data-gift-editor] .field :is(input,select){min-height:38px;padding:8px 10px;font-size:14px;width:100%;min-width:0}
+#edit-form[data-gift-editor] .field textarea{min-height:60px;height:60px;padding:8px 10px;font-size:14px;line-height:1.4;resize:vertical}
+#edit-form[data-gift-editor] .attachments{margin-top:12px;padding-top:12px}
+#edit-form[data-gift-editor] .attachments h3{font-size:13px;margin:0 0 6px}
+#edit-form[data-gift-editor] .attachments>.subtitle{font-size:12px;margin:4px 0}
+#edit-form[data-gift-editor] .upload-area{padding:10px 12px;margin-top:8px}
+#edit-form[data-gift-editor] .upload-area .subtitle{font-size:11px;margin:5px 0 0}
+#edit-form[data-gift-editor] .upload-area input[type=file]{display:none}
+#edit-form[data-gift-editor] .gift-upload-button{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 10px;font-size:12px;border-radius:7px;background:#e8effc;color:#365bb4;cursor:pointer;width:auto}
+.gift-upload-button svg{width:16px;height:16px}
+#edit-form[data-gift-editor] .modal-foot{margin-top:14px;padding-top:12px;gap:8px}
+#edit-form[data-gift-editor] .modal-foot .button{min-height:38px;padding:8px 12px;font-size:13px}
+#edit-form[data-gift-editor] .file-row{padding:8px 0;gap:8px}
+#edit-form[data-gift-editor] .file-actions{display:flex;flex-wrap:wrap;gap:4px}
+html[data-theme="dark"] #edit-form[data-gift-editor] .gift-upload-button{background:#243a60;color:#bfd0ff}
+@media(max-width:800px){
+#modal:has([data-gift-editor]){max-height:92dvh;width:calc(100vw - 16px);border-radius:14px}
+#modal:has([data-gift-editor]) .modal-head{padding:12px 14px}
+#modal:has([data-gift-editor]) .modal-body{padding:12px 14px}
+#edit-form[data-gift-editor] .form-grid{grid-template-columns:1fr;gap:9px}
+#edit-form[data-gift-editor] .field :is(input,select,textarea){font-size:16px;min-height:42px}
+#edit-form[data-gift-editor] .field textarea{height:60px}
+#edit-form[data-gift-editor] .modal-foot .button{min-height:44px}
+#edit-form[data-gift-editor] .gift-upload-button{min-height:40px}
+#edit-form[data-gift-editor] .file-row{flex-wrap:wrap}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1177,6 +1208,13 @@ const editBeforeGiftSheet=edit;edit=function(key,record){editBeforeGiftSheet(key
   if(!record&&giftsType==='Mahar')$('field-type').value='Mahar';
   form.querySelector('label[for="field-amount"]').textContent='Estimasi harga';
   $('modal-body').querySelector('.workflow-link')?.remove();
+  form.dataset.giftEditor='true';
+  const footer=form.querySelector('.modal-foot'),attachments=$('attachments');
+  if(attachments)form.insertBefore(attachments,footer);
+  const uploadLabel=attachments?.querySelector('label[for="attachment"]');
+  if(uploadLabel){uploadLabel.classList.add('gift-upload-button');uploadLabel.innerHTML=icon('attach')+'<span>Lampiran</span>';uploadLabel.setAttribute('role','button');uploadLabel.tabIndex=0;uploadLabel.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();$('attachment').click();}};}
+  $('field-notes').rows=2;
+  const submitButton=form.querySelector('[type="submit"]');if(submitButton)submitButton.innerHTML=icon('check')+'Simpan';
   ['field-itemGroup','field-name','gift-detail','field-amount','field-status','field-notes','field-shopUrl'].forEach(id=>{const element=$(id);if(element)grid.append(element.closest('.field'));});
   const submit=form.onsubmit;form.onsubmit=async event=>{const chosen=stateSelect.value,notes=$('field-notes'),old=notes.value;try{const data=GiftSheet.statusFields(chosen,$('field-paymentStatus').value);stateSelect.innerHTML='<option value="'+data.status+'">'+data.status+'</option>';$('field-paymentStatus').value=data.paymentStatus;notes.value=GiftSheet.pack({...meta,number:$('gift-number').value,detail:$('gift-detail').value,vendor:$('gift-vendor').value,note:old});await submit(event);}catch(error){event.preventDefault();$('form-error').textContent=error.message;}finally{notes.value=old;stateSelect.innerHTML=['Belum Beli','Dalam Proses','Sudah Beli','Sudah disiapkan'].map(value=>'<option '+(value===chosen?'selected':'')+'>'+value+'</option>').join('');}};
 };
