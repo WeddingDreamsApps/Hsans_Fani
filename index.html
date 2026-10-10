@@ -103,15 +103,17 @@ var WeddingCore = (function () {
   }
   function netPaid(item){return(item.payments||[]).reduce((s,p)=>s+(p.type==='refund'?-p.amount:p.amount),0);}
   function attendance(guest){try{const rows=JSON.parse(guest.attendanceLedger||'[]');return Array.isArray(rows)?rows:[];}catch(e){return [];}}
+  function preparationCost(record){const raw=(record?.source||'').match(/[#&]biaya=(\d+)(?:&|$)/)?.[1];if(raw===undefined)return null;const value=Number(raw);return Number.isSafeInteger(value)&&value>=0&&value<=1000000000000?value:null;}
   function totals(db){
     const p=db.profile[0]||{};const costs=db.budget||[];
-    const spent=costs.reduce((s,x)=>s+netPaid(x),0);
+    const preparationPaid=(db.admin||[]).reduce((sum,record)=>sum+(preparationCost(record)||0),0);
+    const spent=costs.reduce((s,x)=>s+netPaid(x),0)+preparationPaid;
     const fromSavings=costs.reduce((s,x)=>s+(x.payments||[]).reduce((a,p)=>a+(p.source==='Tabungan'?(p.type==='refund'?-p.amount:p.amount):0),0),0);
     const deposits=db.savings.reduce((s,x)=>s+(x.type==='Setoran'?x.amount:-x.amount),0);
     const tasks=db.tasks.filter(x=>x.status!=='Tidak berlaku');
     const visitors=(db.guests||[]).flatMap(attendance);
     const guestCash=visitors.reduce((s,x)=>s+Number(x.cash||0),0),guestGoods=visitors.filter(x=>x.goods).length;
-    return {checkedIn:visitors.length,guestCash,guestGoods,netEventCash:guestCash-spent,budget:p.budget||0,committed:costs.reduce((s,x)=>s+x.amount,0),paid:spent,due:costs.reduce((s,x)=>s+Math.max(0,x.amount-netPaid(x)),0),credit:costs.reduce((s,x)=>s+Math.max(0,netPaid(x)-x.amount),0),savings:deposits-fromSavings,target:p.target||0,invites:db.guests.length,quota:db.guests.reduce((s,x)=>s+x.quota,0),attending:db.guests.reduce((s,x)=>s+x.attending,0),tasks:tasks.length,done:tasks.filter(x=>x.status==='Selesai').length};
+    return {checkedIn:visitors.length,guestCash,guestGoods,netEventCash:guestCash-spent,budget:p.budget||0,committed:costs.reduce((s,x)=>s+x.amount,0)+preparationPaid,preparationPaid,paid:spent,due:costs.reduce((s,x)=>s+Math.max(0,x.amount-netPaid(x)),0),credit:costs.reduce((s,x)=>s+Math.max(0,netPaid(x)-x.amount),0),savings:deposits-fromSavings,target:p.target||0,invites:db.guests.length,quota:db.guests.reduce((s,x)=>s+x.quota,0),attending:db.guests.reduce((s,x)=>s+x.attending,0),tasks:tasks.length,done:tasks.filter(x=>x.status==='Selesai').length};
   }
   function mutate(db,req,now){
     requireThat(req&&typeof req==='object','Permintaan tidak valid.');
@@ -171,7 +173,7 @@ var WeddingCore = (function () {
   function csv(rows){const keys=[...new Set(rows.flatMap(x=>Object.keys(x).filter(k=>!['payments','files'].includes(k))))];const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'<!-- CORE -->").replace(/"/g,'""')+'"';return '\uFEFF'+[keys,...rows.map(r=>keys.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');}
   function can(actor,key,write){if(actor?.owner)return true;if(key==='users')return false;return actor?.permissions?.[key]==='write'||(!write&&actor?.permissions?.[key]==='read');}
   function visible(db,actor){const copy=blank();for(const key of Object.keys(modules))copy[key]=can(actor,key,false)?db[key]:[];return copy;}
-  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,totals,mutate,csv,can,visible};
+  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,totals,mutate,csv,can,visible};
 })();
 if(typeof module!=='undefined')module.exports=WeddingCore;
 
@@ -677,6 +679,7 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 /* Keep the roadmap visual; contextual instructions belong to its compact editor. */
 .preparation-view .prep-icon-action{width:38px;min-width:38px;height:38px;padding:8px;display:inline-grid;place-items:center;flex:0 0 38px}
 .prep-icon-action svg{width:18px;height:18px}
+.prep-cost-cell{font-variant-numeric:tabular-nums;white-space:nowrap}
 #edit-form[data-prep-editor] .prep-location-field{grid-column:1/-1}
 .prep-form-guide{margin-top:5px;padding:10px 12px;background:var(--tint);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:12px;line-height:1.6}
 .prep-form-hint{margin:0 0 4px;color:var(--muted);font-size:11px}
@@ -1342,6 +1345,25 @@ function prepGuidance(placeId){
  return '<p class="prep-form-hint">'+esc(place.hint)+'</p><ol>'+place.steps.map(step=>'<li>'+esc(step)+'</li>').join('')+'</ol><div class="prep-form-links">'+(place.links||[]).filter(([key])=>C.can(principal,key,false)).map(([key,label])=>'<button type="button" class="button secondary" data-prep-form-link="'+key+'">'+icon(key)+esc(label)+'</button>').join('')+'<a href="'+PREP_SOURCE+'" target="_blank" rel="noopener">Rujukan</a></div>';
 }
 function prepCost(record){const value=(record?.source||'').match(/[#&]biaya=(\d+)(?:&|$)/)?.[1];return value===undefined?'':Number(value);}
+const drawDocsBeforePreparationCost=drawDocs;
+drawDocs=function(){
+ drawDocsBeforePreparationCost();const table=$('docs')?.querySelector('.document-data-table');if(!table||table.dataset.prepCostReady)return;
+ const entries=[...table.querySelectorAll('tbody tr')].map(row=>({row,record:db.admin.find(record=>record.id===row.querySelector('[data-doc-edit]')?.dataset.docEdit)}));
+ if(!entries.some(({record})=>C.preparationCost(record)!==null))return;
+ table.dataset.prepCostReady='true';const head=document.createElement('th');head.textContent='Biaya';table.querySelector('thead tr').insertBefore(head,table.querySelector('thead tr').children[3]);
+ entries.forEach(({row,record})=>{const cost=C.preparationCost(record),cell=document.createElement('td');cell.className='prep-cost-cell';cell.textContent=cost===null?'—':numberFormat(cost);cell.title=cost===null?'Tidak ada biaya':money(cost);row.insertBefore(cell,row.children[3]);});standardFeatureRows();polishTables();
+};
+const dashboardBeforePreparationCost=dashboardReception;
+dashboardReception=function(){
+ dashboardBeforePreparationCost();if(route!=='dashboard'||!principal.owner||!ready)return;
+ const section=$('view').querySelector('.reception-dashboard'),list=section?.querySelector('#expense-list');if(!list)return;
+ const expenses=(db.admin||[]).filter(record=>C.preparationCost(record)>0);if(!expenses.length)return;
+ list.querySelector('.empty')?.remove();
+ list.insertAdjacentHTML('beforeend',expenses.map(record=>'<div class="expense-row" data-row-id="'+esc(record.id)+'"><div><strong>'+esc(record.name)+'</strong><small>Peta Persiapan · '+esc(PREP_PLACES.find(place=>place.id===prepRecordPlace(record))?.title||'')+(record.date?' · '+esc(prettyDate(record.date)):'')+'</small></div><div>'+money(C.preparationCost(record))+'</div><button class="text-button" data-prep-expense="'+esc(record.id)+'">Detail</button></div>').join(''));
+ list.querySelectorAll('[data-prep-expense]').forEach(button=>button.onclick=()=>edit('admin',db.admin.find(record=>record.id===button.dataset.prepExpense)));
+ section.querySelector('.card-head .subtitle').textContent='Pengeluaran pembayaran dan Peta Persiapan · penerimaan tamu hadir';
+ const count=section.querySelector('.line-stat strong');if(count)count.textContent=numberFormat([...db.budget,...expenses].reduce((sum,record)=>sum+(record.files||[]).length,0))+' berkas';
+};
 function prepSourceWithCost(source,place,cost){const raw=String(cost).replace(/\./g,'').trim();if(raw&&!/^\d+$/.test(raw))throw new Error('Biaya harus berupa angka bulat.');const amount=raw===''?null:Number(raw);if(amount!==null&&(!Number.isSafeInteger(amount)||amount<0||amount>1000000000000))throw new Error('Biaya harus antara 0 dan 1 triliun.');return (source.split('#')[0]||PREP_SOURCE)+'#peta='+place+(amount===null?'':'&biaya='+amount);}
 const editBeforePreparationMap=edit;
 edit=function(key,record){
