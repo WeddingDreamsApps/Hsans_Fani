@@ -680,6 +680,20 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 .preparation-view .prep-icon-action{width:38px;min-width:38px;height:38px;padding:8px;display:inline-grid;place-items:center;flex:0 0 38px}
 .prep-icon-action svg{width:18px;height:18px}
 .prep-cost-cell{font-variant-numeric:tabular-nums;white-space:nowrap}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(1){width:28%!important}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(2){width:14%!important}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(3){width:15%!important}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(4){width:12%!important}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(5){width:17%!important}
+#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(6),#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(7){width:7%!important}
+@media(max-width:800px){
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(1){width:32%!important}
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(2){width:18%!important}
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(3){width:17%!important}
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(4){display:table-cell!important;width:17%!important}
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(5){display:none!important}
+ #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(6),#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(7){width:8%!important}
+}
 #edit-form[data-prep-editor] .prep-location-field{grid-column:1/-1}
 .prep-form-guide{margin-top:5px;padding:10px 12px;background:var(--tint);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:12px;line-height:1.6}
 .prep-form-hint{margin:0 0 4px;color:var(--muted);font-size:11px}
@@ -1370,7 +1384,7 @@ edit=function(key,record){
  const selectedPlace=document.querySelector('#preparation-map [data-prep][aria-pressed="true"]')?.dataset.prep||prepPlace;
  editBeforePreparationMap(key,record);if(key!=='admin'||!$('edit-form'))return;
  const form=$('edit-form'),source=$('field-source'),grid=form.querySelector('.form-grid');if(!source||!grid)return;
- form.dataset.giftEditor='true';form.dataset.prepEditor='true';source.value=source.value.replace(/[#&]peta=[a-z]+/,'');source.closest('.field').hidden=true;
+ form.dataset.giftEditor='true';form.dataset.prepEditor='true';source.value=source.value.split('#')[0];source.closest('.field').hidden=true;
  const location=record?prepRecordPlace(record):selectedPlace==='all'?'kua':selectedPlace;
  grid.insertAdjacentHTML('afterbegin','<div class="field full prep-location-field"><label for="prep-location">Tempat pengurusan</label><select id="prep-location">'+PREP_PLACES.map(p=>'<option value="'+p.id+'" '+(p.id===location?'selected':'')+'>'+esc(p.title)+'</option>').join('')+'</select><div id="prep-form-guide" class="prep-form-guide"></div></div>');
  grid.insertAdjacentHTML('beforeend','<datalist id="prep-doc-suggestions"></datalist>');
