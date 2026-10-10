@@ -1341,6 +1341,8 @@ function prepGuidance(placeId){
  const place=PREP_PLACES.find(p=>p.id===placeId);if(!place)return '';
  return '<p class="prep-form-hint">'+esc(place.hint)+'</p><ol>'+place.steps.map(step=>'<li>'+esc(step)+'</li>').join('')+'</ol><div class="prep-form-links">'+(place.links||[]).filter(([key])=>C.can(principal,key,false)).map(([key,label])=>'<button type="button" class="button secondary" data-prep-form-link="'+key+'">'+icon(key)+esc(label)+'</button>').join('')+'<a href="'+PREP_SOURCE+'" target="_blank" rel="noopener">Rujukan</a></div>';
 }
+function prepCost(record){const value=(record?.source||'').match(/[#&]biaya=(\d+)(?:&|$)/)?.[1];return value===undefined?'':Number(value);}
+function prepSourceWithCost(source,place,cost){const raw=String(cost).replace(/\./g,'').trim();if(raw&&!/^\d+$/.test(raw))throw new Error('Biaya harus berupa angka bulat.');const amount=raw===''?null:Number(raw);if(amount!==null&&(!Number.isSafeInteger(amount)||amount<0||amount>1000000000000))throw new Error('Biaya harus antara 0 dan 1 triliun.');return (source.split('#')[0]||PREP_SOURCE)+'#peta='+place+(amount===null?'':'&biaya='+amount);}
 const editBeforePreparationMap=edit;
 edit=function(key,record){
  const selectedPlace=document.querySelector('#preparation-map [data-prep][aria-pressed="true"]')?.dataset.prep||prepPlace;
@@ -1350,6 +1352,7 @@ edit=function(key,record){
  const location=record?prepRecordPlace(record):selectedPlace==='all'?'kua':selectedPlace;
  grid.insertAdjacentHTML('afterbegin','<div class="field full prep-location-field"><label for="prep-location">Tempat pengurusan</label><select id="prep-location">'+PREP_PLACES.map(p=>'<option value="'+p.id+'" '+(p.id===location?'selected':'')+'>'+esc(p.title)+'</option>').join('')+'</select><div id="prep-form-guide" class="prep-form-guide"></div></div>');
  grid.insertAdjacentHTML('beforeend','<datalist id="prep-doc-suggestions"></datalist>');
+ $('field-notes').closest('.field').insertAdjacentHTML('beforebegin','<div class="field"><label for="prep-cost">Biaya (opsional)</label><input id="prep-cost" type="number" min="0" max="1000000000000" step="1" value="'+prepCost(record)+'" placeholder="Isi jika ada biaya" aria-label="Biaya (opsional)"></div>');
  $('field-name')?.setAttribute('list','prep-doc-suggestions');
  const guide=()=>{const place=PREP_PLACES.find(p=>p.id===$('prep-location').value);$('prep-form-guide').innerHTML=prepGuidance(place.id);$('prep-doc-suggestions').innerHTML=place.docs.map(name=>'<option value="'+esc(name)+'"></option>').join('');$('prep-form-guide').querySelectorAll('[data-prep-form-link]').forEach(b=>b.onclick=()=>{if(!confirm('Buka fitur terkait? Perubahan yang belum disimpan akan ditinggalkan.'))return;$('modal').close();go(b.dataset.prepFormLink);});};
  guide();$('prep-location').onchange=guide;
@@ -1363,7 +1366,8 @@ edit=function(key,record){
  if(upload){upload.classList.add('gift-upload-button');upload.innerHTML=icon('attach')+'<span>Lampiran</span>';upload.title='PDF, Word, JPG atau PNG · maksimal 5 MB';upload.setAttribute('role','button');upload.tabIndex=0;upload.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$(upload.htmlFor).click();}};}
  $('field-notes')?.closest('.field').classList.remove('full');
  const saveButton=footer.querySelector('[type="submit"]');if(saveButton)saveButton.innerHTML=icon('check')+'Simpan';
- const submit=form.onsubmit;form.onsubmit=async event=>{source.value=(source.value.split('#')[0]||PREP_SOURCE)+'#peta='+$('prep-location').value;await submit(event);};
+ accountingInputs();
+ const submit=form.onsubmit;form.onsubmit=async event=>{try{source.value=prepSourceWithCost(source.value,$('prep-location').value,$('prep-cost').value);}catch(error){event.preventDefault();$('form-error').textContent=error.message;return;}await submit(event);};
 };
 
 reload();
