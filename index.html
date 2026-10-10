@@ -615,6 +615,16 @@ html[data-theme="dark"] #edit-form[data-gift-editor] .gift-upload-button{backgro
 #edit-form[data-gift-editor] .file-row{flex-wrap:wrap}
 }
 #edit-form[data-gift-editor] .gift-inline-attachments{margin:0;padding:0;border:0;min-width:0}#edit-form[data-gift-editor] .gift-inline-attachments h3{font-size:12px;margin:0 0 4px}#edit-form[data-gift-editor] .gift-inline-attachments>.subtitle{margin:0 0 4px;font-size:11px}#edit-form[data-gift-editor] .gift-inline-attachments .upload-area{margin:0;padding:6px 8px}#edit-form[data-gift-editor] .gift-inline-attachments .upload-area .subtitle{margin-top:3px;font-size:10px}#edit-form[data-gift-editor] .gift-inline-attachments .gift-upload-button{min-height:30px;padding:4px 8px}#edit-form[data-gift-editor] .gift-inline-attachments .file-row{flex-wrap:wrap}@media(max-width:800px){#edit-form[data-gift-editor] .gift-inline-attachments .gift-upload-button{min-height:40px}}
+#edit-form[data-gift-editor] .field label{line-height:18px;margin:0;font-size:12px}
+#edit-form[data-gift-editor] .field :is(input,select,textarea){height:42px;min-height:42px;border-radius:9px;padding:10px 12px;box-sizing:border-box;font-size:14px;line-height:20px}
+#edit-form[data-gift-editor] .field textarea{resize:vertical}
+#edit-form[data-gift-editor] .gift-inline-attachments h3{line-height:18px;font-size:12px;font-weight:600;margin:0 0 4px;color:var(--muted)}
+#edit-form[data-gift-editor] .gift-inline-attachments>.subtitle{display:none}
+#edit-form[data-gift-editor] .gift-inline-attachments .upload-area{height:42px;padding:0;border:1px solid var(--line);border-radius:9px;box-sizing:border-box;background:var(--white)}
+#edit-form[data-gift-editor] .gift-inline-attachments .upload-area>.subtitle{display:none}
+#edit-form[data-gift-editor] .gift-inline-attachments .gift-upload-button{height:40px;min-height:40px;width:100%;box-sizing:border-box;padding:10px 12px;border-radius:9px;background:transparent;line-height:20px;font-size:13px}
+#edit-form[data-gift-editor] .gift-inline-attachments .gift-upload-button:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+@media(max-width:800px){#edit-form[data-gift-editor] .field :is(input,select,textarea){font-size:16px;height:44px;min-height:44px}#edit-form[data-gift-editor] .gift-inline-attachments .upload-area{height:44px}#edit-form[data-gift-editor] .gift-inline-attachments .gift-upload-button{height:42px;min-height:42px}}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -829,8 +839,17 @@ function accountingInputs(){
     input.type='text';input.inputMode='numeric';
     const raw=()=>input.value.replace(/\./g,'').trim();
     const validate=()=>{const v=raw(),n=Number(v);input.setCustomValidity(v&&(!/^\d+$/.test(v)||!Number.isSafeInteger(n)||(input.dataset.minimum!==''&&n<Number(input.dataset.minimum))||(input.dataset.maximum!==''&&n>Number(input.dataset.maximum)))?'Masukkan angka bulat sesuai batas yang diizinkan.':'');};
-    input.addEventListener('focus',()=>{input.value=raw();});
-    input.addEventListener('input',validate);
+    input.addEventListener('input',()=>{
+      const cursor=input.selectionStart??input.value.length;
+      const digitsBefore=input.value.slice(0,cursor).replace(/\D/g,'').length;
+      validate();
+      if(input.value&&input.validity.valid){
+        input.value=numberFormat(Number(raw()));
+        let position=0,digits=0;
+        while(position<input.value.length&&digits<digitsBefore){if(/\d/.test(input.value[position]))digits++;position++;}
+        input.setSelectionRange(position,position);
+      }
+    });
     input.addEventListener('blur',()=>{validate();if(input.value&&input.validity.valid)input.value=numberFormat(Number(raw()));});
     if(input.value)input.value=numberFormat(Number(input.value));
     validate();
@@ -1215,6 +1234,7 @@ const editBeforeGiftSheet=edit;edit=function(key,record){editBeforeGiftSheet(key
   const uploadLabel=attachments?.querySelector('label[for="attachment"]');
   if(uploadLabel){uploadLabel.classList.add('gift-upload-button');uploadLabel.innerHTML=icon('attach')+'<span>Lampiran</span>';uploadLabel.setAttribute('role','button');uploadLabel.tabIndex=0;uploadLabel.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();$('attachment').click();}};}
   $('field-notes').rows=2;
+  if(uploadLabel)uploadLabel.title='Tambahkan PDF, Word, JPG atau PNG · maksimal 5 MB';
   const submitButton=form.querySelector('[type="submit"]');if(submitButton)submitButton.innerHTML=icon('check')+'Simpan';
   ['field-itemGroup','field-name','gift-detail','field-amount','field-status','field-notes','field-shopUrl'].forEach(id=>{const element=$(id);if(element)grid.append(element.closest('.field'));});
   $('field-notes').closest('.field').classList.remove('full');
