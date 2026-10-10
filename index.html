@@ -717,7 +717,8 @@ function accountingInputs(){
 document.addEventListener('submit',event=>{
   const inputs=[...event.target.querySelectorAll('[data-accounting-input]')];
   inputs.forEach(input=>input.value=input.value.replace(/\./g,''));
-  queueMicrotask(()=>inputs.forEach(input=>{if(input.isConnected&&input.value)input.value=numberFormat(Number(input.value));}));
+  // Restore presentation only after all submit handlers have captured raw integers.
+  setTimeout(()=>inputs.forEach(input=>{if(input.isConnected&&input.value)input.value=numberFormat(Number(input.value.replace(/\./g,'')));}),0);
 },true);
 new MutationObserver(()=>accountingInputs()).observe(document.body,{childList:true,subtree:true});
 accountingInputs();
@@ -826,7 +827,7 @@ function compactNavigation(){
   if(!toggle){toggle=document.createElement('button');toggle.id='sidebar-mode';toggle.className='sidebar-mode';toggle.innerHTML=icon('menu');document.querySelector('.brand').append(toggle);toggle.onclick=()=>{sidebarMode=(sidebarMode+1)%3;compactNavigation();};}
   document.body.dataset.sidebarMode=String(sidebarMode);toggle.title=['Sidebar: ikon dan nama. Klik untuk ikon saja.','Sidebar: ikon saja. Klik untuk sembunyikan.','Sidebar tersembunyi. Klik untuk tampilkan.'][sidebarMode];toggle.setAttribute('aria-label',toggle.title);
   document.querySelectorAll('#nav button').forEach(b=>{const label=b.querySelector('span')?.textContent||b.textContent;b.title=label;b.setAttribute('aria-label',label);});
-  document.querySelectorAll('#view [data-edit],#view [data-edit-gift],#view [data-edit-user]').forEach(b=>{const label=b.textContent.trim();b.title=label;b.setAttribute('aria-label',label);b.innerHTML=icon('edit');b.classList.add('compact-edit');});
+  document.querySelectorAll('#view [data-edit],#view [data-edit-gift],#view [data-edit-user]').forEach(b=>{const label=b.getAttribute('aria-label')||b.title||b.textContent.trim()||'Edit catatan';b.title=label;b.setAttribute('aria-label',label);b.innerHTML=icon('edit');b.classList.add('compact-edit');});
 }
 const renderBeforeCompact=render;render=function(){renderBeforeCompact();compactNavigation();};
 const rowsBeforeCompact=drawRows;drawRows=function(){rowsBeforeCompact();compactNavigation();};
