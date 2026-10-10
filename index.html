@@ -17,7 +17,7 @@
 <body>
 <div class="layout"><div class="mobile-shade" id="shade"></div><aside class="sidebar" id="sidebar"><div class="brand"><span class="brand-mark" id="brand-icon"></span>siap<span style="color:var(--pink);margin-left:-10px">nikah</span></div><div class="nav-label">Ruang pernikahan</div><nav class="nav" id="nav" aria-label="Menu utama"></nav><div class="sidebar-footer"><p>Direncanakan bersama.<br>Disiapkan dengan tenang.</p></div></aside><main class="main"><header class="topbar"><button class="menu-toggle" id="menu-toggle" aria-label="Buka menu"></button><div class="breadcrumb"><span>Ruang pernikahan &nbsp; / &nbsp; </span><strong id="crumb">Ringkasan</strong></div><div class="topright"><span class="save-state" id="save-state" aria-live="polite">Memuat…</span><div class="avatar" id="avatar">SN</div></div></header><div class="content"><div id="mode-banner"></div><div id="view"></div><div class="footer-note">Siap Nikah · Ruang bersama untuk hari istimewa</div></div></main></div>
 <dialog class="modal" id="modal"><div class="modal-head"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Tutup">×</button></div><div class="modal-body" id="modal-body"></div></dialog><div class="toast" id="toast" role="status" hidden></div>
-<script>window.WEDDING_CONFIG={"mode":"supabase-gateway","supabaseUrl":"https://bcqszjdvfswmvesknnks.supabase.co","supabasePublishableKey":"sb_publishable_dP2qI-3Zvxx0QS6n_R_6jQ_VjwJ-1uU","functionName":"wedding-gateway"};</script><script>
+<script>window.WEDDING_CONFIG={"mode":"cloudflare-d1","supabaseUrl":"https://bcqszjdvfswmvesknnks.supabase.co","supabasePublishableKey":"sb_publishable_dP2qI-3Zvxx0QS6n_R_6jQ_VjwJ-1uU","functionName":"wedding-gateway","workerUrl":"https://siap-nikah-api.hasanudin-legal.workers.dev"};</script><script>
 /* Shared business rules for the Apps Script runtime, browser preview and tests. */
 var WeddingCore = (function () {
   'use strict';
@@ -205,8 +205,8 @@ function demo(){
 function rpc(name,payload){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error(e.message||'Tidak dapat terhubung.')))[name](payload));}
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,4500);}
 function status(text){$('save-state').innerHTML=icon('check')+esc(text);}
-async function reload(){if(busy)return;status('Memuat…');try{if(live){const r=await rpc('loadData');db=r.data;email=r.email;principal=r.actor;status('Tersimpan di Sheets');}else{db=demo();status('Data contoh');}ready=true;loadFailed=false;render();}catch(e){ready=false;loadFailed=true;status('Gagal memuat');render();$('view').innerHTML='<div class="error">'+esc(e.message)+'</div><button class="button" id="retry-load">Coba lagi</button>';$('retry-load').onclick=reload;}}
-async function save(request){if(busy)throw new Error('Tunggu proses sebelumnya selesai.');busy=true;status('Menyimpan…');try{let next;if(live){const result=await rpc('changeData',request);next=result.data;}else{next=JSON.parse(JSON.stringify(db));C.mutate(next,request,new Date().toISOString());}db=next;status(live?'Tersimpan di Sheets':'Perubahan contoh');render();toast(live?'Perubahan tersimpan.':'Pratinjau diperbarui. Tidak disimpan ke Google.');return true;}catch(e){status('Gagal disimpan');throw e;}finally{busy=false;}}
+async function reload(){if(busy)return;status('Memuat…');try{if(live){const r=await rpc('loadData');db=r.data;email=r.email;principal=r.actor;status((window.WEDDING_CONFIG?.mode==='cloudflare-d1'?'Tersimpan di D1':'Tersimpan di Sheets'));}else{db=demo();status('Data contoh');}ready=true;loadFailed=false;render();}catch(e){ready=false;loadFailed=true;status('Gagal memuat');render();$('view').innerHTML='<div class="error">'+esc(e.message)+'</div><button class="button" id="retry-load">Coba lagi</button>';$('retry-load').onclick=reload;}}
+async function save(request){if(busy)throw new Error('Tunggu proses sebelumnya selesai.');busy=true;status('Menyimpan…');try{let next;if(live){const result=await rpc('changeData',request);next=result.data;}else{next=JSON.parse(JSON.stringify(db));C.mutate(next,request,new Date().toISOString());}db=next;status(live?(window.WEDDING_CONFIG?.mode==='cloudflare-d1'?'Tersimpan di D1':'Tersimpan di Sheets'):'Perubahan contoh');render();toast(live?'Perubahan tersimpan.':'Pratinjau diperbarui. Tidak disimpan ke Google.');return true;}catch(e){status('Gagal disimpan');throw e;}finally{busy=false;}}
 function go(key){route=key;filter='';search='';$('sidebar').classList.remove('open');$('shade').classList.remove('open');render();}
 function badge(s){return '<span class="badge '+(['Selesai','Hadir','Dipilih','Final','Diserahkan'].includes(s)?'green':['Terhambat','Perlu perbaikan'].includes(s)?'amber':['Berlangsung','Dikemas'].includes(s)?'pink':'')+'">'+esc(s)+'</span>';}
 function render(){
@@ -658,7 +658,7 @@ demo=function(){const data=demoBeforeExperience();const family=data.guests[0];if
 
 /* Public configuration contains only a project URL and publishable key. */
 const gatewayConfig=window.WEDDING_CONFIG||{mode:'preview'};
-const usingSupabaseGateway=gatewayConfig.mode==='supabase-gateway'&&!live;
+const usingSupabaseGateway=['supabase-gateway','cloudflare-d1'].includes(gatewayConfig.mode)&&!live;
 let gatewaySession=null,gatewayRefresh=null;
 const gatewaySessionKey='siapnikah-session:'+gatewayConfig.supabaseUrl;
 function validateGatewayConfig(){
@@ -667,6 +667,7 @@ function validateGatewayConfig(){
   if(!key||key.startsWith('sb_secret_'))throw new Error('Gunakan publishable / anon key untuk aplikasi.');
   if(!key.startsWith('sb_publishable_')){try{const claims=JSON.parse(atob(key.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));if(claims.role!=='anon')throw new Error();}catch{throw new Error('Key aplikasi harus publishable atau anon, bukan service_role.');}}
   if(!/^[a-z][a-z0-9-]*$/.test(gatewayConfig.functionName||''))throw new Error('Nama penghubung belum diisi.');
+  if(gatewayConfig.mode==='cloudflare-d1'&&!/^https:\/\/[a-z0-9.-]+\.workers\.dev\/?$/.test(gatewayConfig.workerUrl||''))throw new Error('Alamat penghubung Cloudflare belum diisi.');
 }
 function storeGatewaySession(session){gatewaySession=session;try{if(session)sessionStorage.setItem(gatewaySessionKey,JSON.stringify(session));else sessionStorage.removeItem(gatewaySessionKey);}catch{}}
 async function gatewayAuth(path,body,token){
@@ -696,7 +697,8 @@ if(usingSupabaseGateway){
   try{validateGatewayConfig();const fragment=new URLSearchParams(location.hash.slice(1));if(fragment.get('access_token')&&fragment.get('refresh_token')){storeGatewaySession({access_token:fragment.get('access_token'),refresh_token:fragment.get('refresh_token'),expires_at:Math.floor(Date.now()/1000)+Number(fragment.get('expires_in')||3600)});history.replaceState(null,'',location.pathname+location.search);}else{const stored=sessionStorage.getItem(gatewaySessionKey);if(stored)gatewaySession=JSON.parse(stored);}}catch{}
   rpc=async function(method,payload){
     validateGatewayConfig();const token=await gatewayAccessToken();
-    const response=await fetch(gatewayConfig.supabaseUrl+'/functions/v1/'+gatewayConfig.functionName,{method:'POST',headers:{apikey:gatewayConfig.supabasePublishableKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({method,payload}),signal:AbortSignal.timeout(65000)});
+    const endpoint=gatewayConfig.mode==='cloudflare-d1'?gatewayConfig.workerUrl:gatewayConfig.supabaseUrl+'/functions/v1/'+gatewayConfig.functionName;
+    const response=await fetch(endpoint,{method:'POST',headers:{apikey:gatewayConfig.supabasePublishableKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({method,payload}),signal:AbortSignal.timeout(65000)});
     let data;try{data=await response.json();}catch{throw new Error('Penghubung belum tersedia.');}
     if(!response.ok){if(response.status===401)storeGatewaySession(null);throw new Error(data.error||'Penyimpanan belum berhasil.');}return data;
   };
