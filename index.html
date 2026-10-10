@@ -684,9 +684,9 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 .prep-form-links{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}
 .prep-form-links .button{min-height:30px;padding:4px 8px;font-size:11px}
 .prep-form-links svg{width:14px;height:14px}.prep-form-links a{font-size:11px;margin-left:auto}
-#edit-form[data-prep-editor] .new-budget-proof{padding:0;margin:0;border:0}
+#edit-form[data-prep-editor] .new-budget-proof{padding:0;margin:0;border:0;background:transparent}
 #edit-form[data-prep-editor] .new-budget-proof input[type=file],#edit-form[data-prep-editor] .new-budget-proof small{display:none}
-#edit-form[data-prep-editor] .new-budget-proof .gift-upload-button{display:flex;width:100%;height:42px;min-height:42px;margin-top:22px;border:1px solid var(--line);background:var(--white);color:var(--ink);box-sizing:border-box;font-size:13px;cursor:pointer}
+#edit-form[data-prep-editor] .new-budget-proof .gift-upload-button{display:flex;width:100%;height:42px;min-height:42px;margin-top:0;border:1px solid var(--line);background:var(--white);color:var(--ink);box-sizing:border-box;font-size:13px;cursor:pointer}
 @media(max-width:800px){.prep-form-guide{font-size:13px}#edit-form[data-prep-editor] .new-budget-proof .gift-upload-button{height:44px;min-height:44px;margin-top:0}}
 
 </style><script>
@@ -1355,6 +1355,7 @@ edit=function(key,record){
  guide();$('prep-location').onchange=guide;
  $('modal-title').textContent=(record?'Edit data':'Tambah data')+' persiapan';
  $('modal-body').querySelector('.workflow-link')?.remove();
+ $('modal-body').querySelector(':scope > .subtitle')?.remove();
  const footer=form.querySelector('.modal-foot'),attachments=$('attachments'),newFile=$('new-admin-file');
  if(attachments){attachments.classList.add('gift-inline-attachments');grid.append(attachments);}
  if(newFile){const box=newFile.closest('.new-budget-proof');box.classList.add('gift-inline-attachments');grid.append(box);}
