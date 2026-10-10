@@ -1175,6 +1175,8 @@ const editBeforeGiftSheet=edit;edit=function(key,record){editBeforeGiftSheet(key
   // Preserve existing metadata in the submitted form without exposing unrelated fields.
   ['gift-number','gift-vendor','field-type','field-quantity','field-paymentStatus','field-owner','gift-progress-display'].forEach(id=>{const element=$(id);if(element)element.closest('.field').hidden=true;});
   if(!record&&giftsType==='Mahar')$('field-type').value='Mahar';
+  form.querySelector('label[for="field-amount"]').textContent='Estimasi harga';
+  $('modal-body').querySelector('.workflow-link')?.remove();
   ['field-itemGroup','field-name','gift-detail','field-amount','field-status','field-notes','field-shopUrl'].forEach(id=>{const element=$(id);if(element)grid.append(element.closest('.field'));});
   const submit=form.onsubmit;form.onsubmit=async event=>{const chosen=stateSelect.value,notes=$('field-notes'),old=notes.value;try{const data=GiftSheet.statusFields(chosen,$('field-paymentStatus').value);stateSelect.innerHTML='<option value="'+data.status+'">'+data.status+'</option>';$('field-paymentStatus').value=data.paymentStatus;notes.value=GiftSheet.pack({...meta,number:$('gift-number').value,detail:$('gift-detail').value,vendor:$('gift-vendor').value,note:old});await submit(event);}catch(error){event.preventDefault();$('form-error').textContent=error.message;}finally{notes.value=old;stateSelect.innerHTML=['Belum Beli','Dalam Proses','Sudah Beli','Sudah disiapkan'].map(value=>'<option '+(value===chosen?'selected':'')+'>'+value+'</option>').join('');}};
 };
