@@ -341,6 +341,8 @@ button:disabled{cursor:not-allowed}.button{min-height:44px;border-radius:11px;fo
 
 .toolbar #export{flex:0 0 auto;width:auto;min-width:0;min-height:30px;padding:5px 8px;font-size:11px;gap:5px;white-space:nowrap}.toolbar #export svg{width:14px;height:14px}@media(max-width:800px){.toolbar #export{width:auto;min-height:28px;padding:4px 7px;font-size:10px}}
 
+#view .guest-three-metrics,#view #guest-receipt-summary.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:800px){#view .guest-three-metrics,#view #guest-receipt-summary.metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}#view .guest-three-metrics .metric,#view #guest-receipt-summary .metric{padding:9px 8px}#view .guest-three-metrics .metric-top,#view #guest-receipt-summary .metric-top{font-size:10px}#view .guest-three-metrics .metric-icon,#view #guest-receipt-summary .metric-icon{display:none}#view .guest-three-metrics strong,#view #guest-receipt-summary strong{font-size:18px}#view .guest-three-metrics small,#view #guest-receipt-summary small{font-size:9px}}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -473,14 +475,8 @@ function usersPage(){
   $('add-record').onclick=()=>edit('users');document.querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>edit('users',db.users.find(x=>x.id===b.dataset.user)));
 }
 function permissionFields(record){const p=userPermissions(record);return '<div class="field full"><h3>Akses per modul</h3><div class="permission-table">'+Object.entries(C.modules).filter(([k])=>k!=='users').map(([k,v])=>'<label class="permission-row"><span>'+esc(v.title)+'</span><select name="perm-'+k+'" data-permission="'+k+'">'+[['none','Tanpa akses'],['read','Lihat'],['write','Ubah']].map(([value,label])=>'<option value="'+value+'" '+((p[k]||'none')===value?'selected':'')+'>'+label+'</option>').join('')+'</select></label>').join('')+'</div></div>';}
-function enhanceGuests(){
-  const config=document.createElement('section');config.className='card invitation-config';const p=db.profile[0]||{};
-  config.innerHTML='<h3>Hubungkan web undangan</h3><p class="subtitle">Tautan setiap tamu memuat ID, nama, acara, dan kuota. Sambungan RSVP otomatis diaktifkan saat web undangan tersedia.</p><div class="inline-form"><div class="field"><label for="invitation-base">URL web undangan</label><input id="invitation-base" type="url" placeholder="https://undangan-kalian.com" value="'+esc(p.invitationUrl)+'" '+(!C.can(principal,'profile',true)?'disabled':'')+'></div><button class="button secondary" id="save-invitation">Simpan URL</button><button class="button secondary" id="export-invitation">Ekspor data integrasi</button></div>';
-  const toolbar=$('view').querySelector('.toolbar');toolbar.before(config);
-  $('save-invitation').disabled=!C.can(principal,'profile',true);$('save-invitation').onclick=async()=>{if(!p.id){toast('Isi Data Mempelai terlebih dahulu.');return;}try{await save({requestId:uuid(),collection:'profile',id:p.id,version:p.version,action:'save',data:{...p,invitationUrl:$('invitation-base').value.trim()}});}catch(e){toast(e.message);}};
-  $('export-invitation').onclick=()=>download('integrasi-undangan.json',JSON.stringify({schemaVersion:1,generatedAt:new Date().toISOString(),guests:db.guests.map(x=>({guestId:x.id,name:x.name,event:x.event,quota:x.quota,rsvp:{status:x.status,attending:x.attending},attendance:C.attendance(x),link:invitationLink(x)}))},null,2),'application/json');
-  const head=$('records').querySelector('thead tr');if(head){const th=document.createElement('th');th.textContent='Undangan digital';head.insertBefore(th,head.lastElementChild);$('records').querySelectorAll('tbody tr').forEach((tr,i)=>{const guest=visibleRows()[i];const td=document.createElement('td');td.innerHTML=badge(guest.deliveryStatus||'Belum dikirim')+'<br><button class="edit" data-invite="'+esc(guest.id)+'">Tautan & pesan</button>';tr.insertBefore(td,tr.lastElementChild);});document.querySelectorAll('[data-invite]').forEach(b=>b.onclick=()=>invitationModal(db.guests.find(x=>x.id===b.dataset.invite)));}
-}
+function enhanceGuests(){document.querySelector('#view>.metrics')?.classList.add('guest-three-metrics');}
+
 const baseDrawRows=drawRows;
 drawRows=function(){baseDrawRows();if(route==='guests'&&$('invitation-base')){const existing=$('view').querySelector('.invitation-config');existing?.remove();enhanceGuests();}};
 function invitationLink(x){const base=db.profile[0]?.invitationUrl;if(!base)return '';try{const url=new URL(base);if(url.protocol!=='https:')return '';url.searchParams.set('guest',x.id);url.searchParams.set('to',x.name);url.searchParams.set('event',x.event);return url.href;}catch(e){return '';}}
