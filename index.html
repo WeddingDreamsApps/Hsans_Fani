@@ -1323,6 +1323,7 @@ const rowsBeforeKuaTarget=standardFeatureRows;standardFeatureRows=function(){row
 /* Keep existing ledgers and permissions while presenting one finance workspace. */
 function integratedWorkspace(){
   if(!ready)return;
+  if(route==='dashboard')document.querySelector('.topbar #add-task')?.remove();
   const canBudget=C.can(principal,'budget',false),canSavings=C.can(principal,'savings',false);
   document.querySelectorAll('#nav [data-route="profile"],#view [data-menu="profile"]').forEach(b=>b.remove());
   document.querySelectorAll('#nav [data-route="savings"],#view [data-menu="savings"]').forEach(b=>{if(canBudget)b.remove();else{b.querySelector('span').textContent='Budget & Pengeluaran';b.setAttribute('aria-label','Budget & Pengeluaran');}});
