@@ -114,6 +114,7 @@ var WeddingCore = (function () {
     return result;
   }
   function financePaid(record){return record.sourceKey==='admin'?record.amount:netPaid(record);}
+  function paidFinanceRows(db){return financeRows(db).filter(record=>financePaid(record)>0);}
   function totals(db){
     const p=db.profile[0]||{};const costs=financeRows(db);
     const preparationPaid=costs.filter(record=>record.sourceKey==='admin').reduce((sum,record)=>sum+financePaid(record),0);
@@ -183,7 +184,7 @@ var WeddingCore = (function () {
   function csv(rows){const keys=[...new Set(rows.flatMap(x=>Object.keys(x).filter(k=>!['payments','files'].includes(k))))];const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'<!-- CORE -->").replace(/"/g,'""')+'"';return '\uFEFF'+[keys,...rows.map(r=>keys.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');}
   function can(actor,key,write){if(actor?.owner)return true;if(key==='users')return false;return actor?.permissions?.[key]==='write'||(!write&&actor?.permissions?.[key]==='read');}
   function visible(db,actor){const copy=blank();for(const key of Object.keys(modules))copy[key]=can(actor,key,false)?db[key]:[];return copy;}
-  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,financeRows,financePaid,totals,mutate,csv,can,visible};
+  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,financeRows,financePaid,paidFinanceRows,totals,mutate,csv,can,visible};
 })();
 if(typeof module!=='undefined')module.exports=WeddingCore;
 
@@ -1486,8 +1487,8 @@ async function financePayment(row){
  if(ledger)payment(ledger);
 }
 function drawFinanceRows(){
- const rows=C.financeRows(db).filter(row=>!search||[row.name,row.category,financeSource(row)].join(' ').toLowerCase().includes(search.toLowerCase()));
- $('records').innerHTML='<div class="table-wrap"><table class="table standard-data-table finance-table"><thead><tr>'+['Item biaya','Sumber','Rencana biaya','Dibayar','Sisa','Lampiran',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const paid=C.financePaid(row),files=financeFiles(row),status=paid===0&&row.amount>0?'Belum dibayar':paid<row.amount?'DP / sebagian':'Lunas';return '<tr data-finance-row="'+index+'"><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong><small>'+esc(row.category)+(row.date?' · '+esc(prettyDate(row.date)):'')+'</small></td><td><span class="finance-source">'+esc(financeSource(row))+'</span></td><td>'+(row.amount?numberFormat(row.amount):'—')+'</td><td>'+(paid?numberFormat(paid):'—')+'<small>'+status+'</small></td><td>'+(row.amount>paid?numberFormat(row.amount-paid):'—')+'</td><td><button class="doc-edit-icon" data-finance-files="'+index+'" aria-label="'+(files.length?'Lihat lampiran ':'Tambah lampiran ')+esc(row.name)+'" title="'+files.length+' lampiran">'+icon('attach')+'</button>'+(files.length?'<small>'+numberFormat(files.length)+'</small>':'')+'</td><td><div class="finance-actions">'+(row.sourceKey!=='admin'&&C.can(principal,'budget',true)?'<button class="doc-edit-icon" data-finance-pay="'+index+'" aria-label="Catat pembayaran '+esc(row.name)+'" title="Catat pembayaran">'+icon('budget')+'</button>':'')+'<button class="doc-edit-icon" data-finance-edit="'+index+'" aria-label="Edit '+esc(row.name)+'" title="'+(row.sourceKey==='budget'?'Edit biaya':'Buka data asal')+'">'+icon(row.sourceKey==='budget'?'edit':'link')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+(!rows.length?'<div class="empty"><p>Belum ada biaya yang sesuai.</p></div>':'');
+ const rows=C.paidFinanceRows(db).filter(row=>!search||[row.name,row.category,financeSource(row)].join(' ').toLowerCase().includes(search.toLowerCase()));
+ $('records').innerHTML='<div class="table-wrap"><table class="table standard-data-table finance-table"><thead><tr>'+['Item biaya','Sumber','Rencana biaya','Dibayar','Sisa','Lampiran',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const paid=C.financePaid(row),files=financeFiles(row),status=paid===0&&row.amount>0?'Belum dibayar':paid<row.amount?'DP / sebagian':'Lunas';return '<tr data-finance-row="'+index+'"><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong><small>'+esc(row.category)+(row.date?' · '+esc(prettyDate(row.date)):'')+'</small></td><td><span class="finance-source">'+esc(financeSource(row))+'</span></td><td>'+(row.amount?numberFormat(row.amount):'—')+'</td><td>'+(paid?numberFormat(paid):'—')+'<small>'+status+'</small></td><td>'+(row.amount>paid?numberFormat(row.amount-paid):'—')+'</td><td><button class="doc-edit-icon" data-finance-files="'+index+'" aria-label="'+(files.length?'Lihat lampiran ':'Tambah lampiran ')+esc(row.name)+'" title="'+files.length+' lampiran">'+icon('attach')+'</button>'+(files.length?'<small>'+numberFormat(files.length)+'</small>':'')+'</td><td><div class="finance-actions">'+(row.sourceKey!=='admin'&&C.can(principal,'budget',true)?'<button class="doc-edit-icon" data-finance-pay="'+index+'" aria-label="Catat pembayaran '+esc(row.name)+'" title="Catat pembayaran">'+icon('budget')+'</button>':'')+'<button class="doc-edit-icon" data-finance-edit="'+index+'" aria-label="Edit '+esc(row.name)+'" title="'+(row.sourceKey==='budget'?'Edit biaya':'Buka data asal')+'">'+icon(row.sourceKey==='budget'?'edit':'link')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+(!rows.length?'<div class="empty"><p>Belum ada pengeluaran yang sudah dibayar.</p></div>':'');
  document.querySelectorAll('[data-finance-edit]').forEach(button=>button.onclick=()=>financeOpenSource(rows[Number(button.dataset.financeEdit)]));
  document.querySelectorAll('[data-finance-files]').forEach(button=>button.onclick=()=>financeViewFiles(rows[Number(button.dataset.financeFiles)]));
  document.querySelectorAll('[data-finance-pay]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{await financePayment(rows[Number(button.dataset.financePay)]);}catch(error){toast(error.message);}finally{button.disabled=false;}});
@@ -1497,7 +1498,7 @@ function drawFinanceRows(){
 const drawRowsBeforeFinance=drawRows;drawRows=function(){if(route==='budget'){drawFinanceRows();return;}drawRowsBeforeFinance();};
 const dashboardBeforeFinance=dashboardReception;dashboardReception=function(){
  dashboardBeforeFinance();if(route!=='dashboard'||!principal.owner||!ready)return;const section=$('view').querySelector('.reception-dashboard'),list=section?.querySelector('#expense-list');if(!list)return;
- const rows=C.financeRows(db),expenses=rows.filter(row=>C.financePaid(row)>0);
+ const rows=C.financeRows(db),expenses=C.paidFinanceRows(db);
  list.innerHTML=expenses.map((row,index)=>'<div class="expense-row" data-row-id="'+esc(row.id)+'"><div><strong>'+esc(row.name)+'</strong><small>'+esc(financeSource(row))+'</small></div><div>'+money(C.financePaid(row))+'</div><button class="text-button" data-finance-expense="'+index+'">Detail</button></div>').join('')||'<p class="subtitle empty">Belum ada pengeluaran tercatat.</p>';
  list.querySelectorAll('[data-finance-expense]').forEach(button=>button.onclick=()=>financeOpenSource(expenses[Number(button.dataset.financeExpense)]));
  section.querySelector('.card-head .subtitle').textContent='Pembayaran dan biaya persiapan terintegrasi · penerimaan tamu hadir';
