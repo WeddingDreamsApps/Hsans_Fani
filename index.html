@@ -796,6 +796,55 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 
 .timeline-toolbar #task-filter{flex:0 1 180px;max-width:200px;font-size:12px;min-width:130px}@media(max-width:800px){.timeline-toolbar .search{flex:1 1 150px}.timeline-toolbar #task-filter{flex:0 1 140px;max-width:150px;min-width:110px}}
 
+
+/* Mobile presentation only: all actions and data remain available. */
+@media(max-width:800px){
+  .main,.content,#view,.card,.card-body{min-width:0}
+  .topbar{height:auto!important;min-height:0!important;display:flex;flex-wrap:wrap;gap:5px!important;padding:8px 10px!important;align-items:center}
+  .topbar>.page-head,.topbar>.page-head.finance-header{flex:1 1 100%!important;width:100%!important;max-width:none!important;gap:8px!important;margin:0}
+  .topbar>.page-head>div:first-child{min-width:0;flex:1 1 auto}
+  .topbar>.page-head h1{max-width:none;font-size:16px!important;line-height:1.3;letter-spacing:-.25px}
+  .topbar>.page-head>.button{flex-shrink:0;margin-left:auto;min-height:36px!important;border-radius:10px;padding:7px 9px!important}
+  .topbar .topright{position:static!important;margin-left:auto;gap:7px!important;min-height:32px;padding:0;flex:0 0 auto}
+  .topbar .topright button{min-height:32px}
+  .topbar .finance-tabs,.topbar .guest-feature-tabs{width:fit-content;max-width:100%;gap:2px;padding:3px;overflow:visible}
+  .topbar .finance-tabs button,.topbar .guest-feature-tabs button{min-height:32px;font-size:11px;padding:6px 7px;white-space:nowrap}
+  .content{padding:10px 10px calc(82px + env(safe-area-inset-bottom))!important}
+  .metrics{gap:8px!important;margin-bottom:10px}.metric{padding:10px!important;border-radius:13px}
+  .metric strong{line-height:1.25}.metric small{font-size:11px;line-height:1.45}
+  .card{border-radius:13px}.card-head,.card-body{padding:12px}.card-head h2{font-size:14px}
+  .toolbar{display:flex!important;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:9px}
+  .toolbar .search{flex:1 1 180px!important;min-width:0!important;width:auto!important}
+  .toolbar .search input{min-width:0;font-size:16px!important;min-height:40px}
+  .toolbar #export{flex:0 0 36px;width:36px;min-width:36px;min-height:40px;font-size:0!important;padding:8px!important;display:inline-flex;align-items:center;justify-content:center}
+  .toolbar #export svg{width:18px;height:18px;flex-shrink:0}
+  .toolbar select{min-height:40px;font-size:16px!important;max-width:100%}
+  #view .table{table-layout:fixed;width:100%;font-size:13px}
+  #view .table :is(th,td){padding:9px 7px!important;vertical-align:middle}
+  #view .table th{font-size:10px!important;letter-spacing:.02em}
+  #view .table td{line-height:1.4;overflow-wrap:anywhere}
+  #view .table td :is(strong,a){max-width:100%}
+  #view .table td small{font-size:11px;line-height:1.4}
+  #view .compact-edit,.table .icon-button{min-height:36px!important;min-width:32px}
+  .modal{width:calc(100vw - 16px)!important;max-width:560px!important;max-height:calc(100dvh - 16px)!important;border-radius:16px}
+  .modal-head{padding:12px 14px}.modal-head h2{font-size:17px;line-height:1.35}
+  .modal-body{padding:12px 14px!important}.form-grid{gap:10px!important;min-width:0}
+  .field{min-width:0;gap:4px}.field label{font-size:12px;line-height:1.4}
+  .modal :is(input,select,textarea){font-size:16px!important;min-height:44px;padding:9px 10px;max-width:100%;border-radius:10px}
+  .modal textarea{min-height:66px;height:auto}
+  .modal :is(.form-actions,.modal-foot){gap:8px;flex-wrap:wrap;padding-top:10px;margin-top:10px}
+  .modal :is(.form-actions,.modal-foot) .button{min-height:42px}
+  .file-row{gap:6px;min-width:0}.file-row>span{min-width:0;overflow-wrap:anywhere}
+  .bottom-nav{padding:4px 5px max(6px,env(safe-area-inset-bottom));border-radius:14px 14px 0 0}.bottom-nav button{min-height:46px;border-radius:10px}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+}
+@media(max-width:360px){
+  .topbar .finance-header{flex-wrap:wrap}.topbar .finance-header>div:first-child{flex:1 1 100%}
+  .topbar .finance-header>.button{margin-left:0}
+  .topbar .guest-feature-tabs button{padding:6px;font-size:11px}
+  .modal .form-grid{grid-template-columns:1fr!important}.modal .form-grid .field{grid-column:1!important}
+}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
