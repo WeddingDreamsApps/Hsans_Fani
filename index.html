@@ -1175,6 +1175,25 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 #records .invitation-summary-table .doc-edit-icon{width:25px;min-width:25px;flex-basis:25px;height:32px}
 }
 
+/* Address beside name, with the same compact rhythm. */
+#view table.table.invitation-summary-table :is(th,td):nth-child(1){width:25%!important;text-align:left!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(2){width:30%!important;text-align:left!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(3){width:15%!important;text-align:center!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(4){width:15%!important;text-align:center!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(5){width:15%!important;text-align:center!important}
+.invite-address-button{display:block;width:100%;padding:0;border:0;background:none;color:var(--muted);font:inherit;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#view .invitation-summary-table .invite-kind{display:block;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){
+#view table.table.invitation-summary-table :is(th,td):nth-child(1){width:22%!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(2){width:23%!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(3){width:16%!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(4){width:18%!important}
+#view table.table.invitation-summary-table :is(th,td):nth-child(5){width:21%!important}
+#view .invitation-summary-table .doc-edit-icon{width:23px!important;min-width:23px!important;flex-basis:23px!important;padding:3px!important}
+#view .invitation-summary-table .invitation-actions{gap:1px!important}
+#view table.table.invitation-summary-table td{padding:7px 3px!important;font-size:12px!important}
+}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -2005,10 +2024,10 @@ function invitationDetails(row){
 }
 function drawInvitationRows(){
  const rows=invitationGuestRows();
- $('records').innerHTML=rows.length?'<div class="table-wrap"><table class="table standard-data-table invitation-table compact-invitation-table invitation-summary-table"><thead><tr><th>Nama</th><th>Undangan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+rows.map(row=>{
+ $('records').innerHTML=rows.length?'<div class="table-wrap"><table class="table standard-data-table invitation-table compact-invitation-table invitation-summary-table"><thead><tr><th>Nama</th><th>Alamat</th><th>Undangan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+rows.map(row=>{
  const meta=I.read(row),actual=C.attendance(row).length,presence=actual?'Hadir '+numberFormat(actual):'Belum hadir';
  const kind=meta.type==='Fisik & Digital'?'Fisik + Digital':meta.type;
- return '<tr data-row-id="'+esc(row.id)+'"><td><button class="invite-name-button" data-invite-view="'+esc(row.id)+'" title="Lihat rincian '+esc(row.name)+'">'+esc(row.name)+'</button></td><td><span class="invite-kind" title="'+esc(meta.type)+'">'+esc(kind)+'</span></td><td><span class="badge '+(actual?'green':'')+'" title="'+esc(presence)+'">'+esc(presence)+'</span></td><td><div class="invitation-actions"><button class="doc-edit-icon" data-invite-view="'+esc(row.id)+'" aria-label="Lihat rincian '+esc(row.name)+'" title="Lihat rincian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="doc-edit-icon" data-invite-edit="'+esc(row.id)+'" aria-label="Edit undangan '+esc(row.name)+'" title="Edit undangan">'+icon('edit')+'</button><button class="doc-edit-icon" data-invite-arrival="'+esc(row.id)+'" aria-label="Buku tamu '+esc(row.name)+'" title="Catat kehadiran & pemberian">'+icon('guests')+'</button></div></td></tr>';
+ return '<tr data-row-id="'+esc(row.id)+'"><td><button class="invite-name-button" data-invite-view="'+esc(row.id)+'" title="Lihat rincian '+esc(row.name)+'">'+esc(row.name)+'</button></td><td><button class="invite-address-button" data-invite-view="'+esc(row.id)+'" title="'+esc(row.address||'Alamat belum diisi')+'">'+esc(row.address||'—')+'</button></td><td><span class="invite-kind" title="'+esc(meta.type)+'">'+esc(kind)+'</span></td><td><span class="badge '+(actual?'green':'')+'" title="'+esc(presence)+'">'+esc(presence)+'</span></td><td><div class="invitation-actions"><button class="doc-edit-icon" data-invite-view="'+esc(row.id)+'" aria-label="Lihat rincian '+esc(row.name)+'" title="Lihat rincian"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button><button class="doc-edit-icon" data-invite-edit="'+esc(row.id)+'" aria-label="Edit undangan '+esc(row.name)+'" title="Edit undangan">'+icon('edit')+'</button><button class="doc-edit-icon" data-invite-arrival="'+esc(row.id)+'" aria-label="Buku tamu '+esc(row.name)+'" title="Catat kehadiran & pemberian">'+icon('guests')+'</button></div></td></tr>';
  }).join('')+'</tbody></table></div>':'<div class="empty"><p>Belum ada undangan yang sesuai.</p></div>';
  $('records').querySelectorAll('[data-invite-view]').forEach(b=>b.onclick=()=>invitationDetails(db.guests.find(x=>x.id===b.dataset.inviteView)));
  $('records').querySelectorAll('[data-invite-edit]').forEach(b=>b.onclick=()=>edit('guests',db.guests.find(x=>x.id===b.dataset.inviteEdit)));
