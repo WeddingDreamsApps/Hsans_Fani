@@ -799,6 +799,7 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 
 /* Mobile presentation only: all actions and data remain available. */
 .account-utility-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.wedding-settings-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--tint);color:var(--pink);cursor:pointer}.wedding-settings-icon svg{width:18px;height:18px}.topbar .dashboard-settings-header>#add-task{margin-left:auto}.wedding-settings-icon:hover{filter:brightness(.96)}
 @media(max-width:800px){
   .main,.content,#view,.card,.card-body{min-width:0}
   .topbar{height:auto!important;min-height:0!important;display:flex;flex-wrap:wrap;gap:5px!important;padding:8px 10px!important;align-items:center}
@@ -1337,7 +1338,7 @@ function integratedWorkspace(){
     const add=document.querySelector('.topbar #add-record');if(add){add.innerHTML=icon('plus')+(route==='savings'?'Catat tabungan':'Catat pengeluaran');}
   }
   if(route==='dashboard'&&C.can(principal,'profile',false)){
-    const p=db.profile[0]||{},card=document.createElement('section');card.className='card wedding-settings';card.innerHTML='<div><strong>Pengaturan pernikahan</strong><small>'+esc((p.name||'Mempelai pria')+' & '+(p.partner||'Mempelai wanita'))+' · '+esc(prettyDate(p.date))+'</small></div><button class="button secondary" id="wedding-settings">'+icon('edit')+'Data mempelai</button>';$('view').prepend(card);$('wedding-settings').onclick=()=>go('profile');
+    const head=document.querySelector('.topbar>.page-head'),button=document.createElement('button');button.type='button';button.className='wedding-settings-icon';button.id='wedding-settings';button.title='Pengaturan pernikahan & data mempelai';button.setAttribute('aria-label',button.title);button.innerHTML=icon('edit');button.onclick=()=>go('profile');if(head){head.classList.add('dashboard-settings-header');head.append(button);}
   }
   if(route==='profile'){const heading=document.querySelector('.topbar h1');if(heading)heading.textContent='Pengaturan pernikahan';const back=document.createElement('button');back.className='button secondary';back.textContent='Kembali ke Dashboard';back.onclick=()=>go('dashboard');$('view').prepend(back);}
 }
