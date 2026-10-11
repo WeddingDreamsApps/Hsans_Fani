@@ -508,6 +508,32 @@ html body:not(:has(#gateway-login)) .concept-theme{display:inline-flex;align-ite
 html body:not(:has(#gateway-login)) .concept-theme svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 html[data-theme="dark"] body:not(:has(#gateway-login)) .concept-theme{background:#263853;color:#d6e4ff;border-color:#4a6082}
 html body:not(:has(#gateway-login)) .concept-theme:hover{box-shadow:0 0 0 3px #789aee20}
+
+/* Blue navigation shares the dashboard palette, with readable text accents. */
+html:not([data-theme="dark"]) body:not(:has(#gateway-login)) .sidebar,
+html[data-theme="dark"] body:not(:has(#gateway-login)) .sidebar{
+ background:linear-gradient(165deg,#223965 0%,#3053a5 55%,#3558c8 100%);
+ --pink:#c6e5ff;--muted:#d7e3fa;--ink:#fff;--line:#ffffff24;--tint:#ffffff14;
+ color:#fff;border-color:#ffffff24;box-shadow:5px 0 24px #19386618;
+}
+html[data-theme="dark"] body:not(:has(#gateway-login)) .sidebar{background:linear-gradient(165deg,#152744,#233e76 55%,#2a4898 100%)}
+html body:not(:has(#gateway-login)) .sidebar .brand{color:#fff;border-color:#ffffff24}
+html body:not(:has(#gateway-login)) .sidebar .brand-mark{background:#ffffff1a;color:#e5f2ff;border:1px solid #ffffff30;box-shadow:none}
+html body:not(:has(#gateway-login)) .sidebar :is(.nav-label,.sidebar-footer p){color:#d3e2ff}
+html body:not(:has(#gateway-login)) .sidebar #nav button{color:#edf3ff;background:transparent}
+html body:not(:has(#gateway-login)) .sidebar #nav button svg{color:#afdaff}
+html body:not(:has(#gateway-login)) .sidebar #nav button:hover{background:#ffffff14;color:#fff}
+html body:not(:has(#gateway-login)) .sidebar #nav button.active{background:#f3f7ff;color:#294ba4;border-color:#fff3;box-shadow:0 4px 12px #10295b22}
+html body:not(:has(#gateway-login)) .sidebar #nav button.active svg{color:#3558c8}
+html body:not(:has(#gateway-login)) .sidebar .sidebar-mode{background:#ffffff18;color:#e8f3ff;border-color:#ffffff30}
+html body:not(:has(#gateway-login)) .sidebar button:focus-visible{outline:2px solid #c6e5ff;outline-offset:3px}
+html body:not(:has(#gateway-login)) :is(.topbar h1,#view h2){color:#294b97}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.topbar h1,#view h2){color:#bcd3ff}
+html body:not(:has(#gateway-login)) #view .hero h2{color:#fff}
+html body:not(:has(#gateway-login)) #view .metric>span:first-child{color:#426199}
+html[data-theme="dark"] body:not(:has(#gateway-login)) #view .metric>span:first-child{color:#b2ccf8}
+html body:not(:has(#gateway-login)) #view .table th{color:#3d5c9d;background:#eef3ff}
+html[data-theme="dark"] body:not(:has(#gateway-login)) #view .table th{color:#aac8f8;background:#162641}
 @media(prefers-reduced-motion:reduce){.concept-theme{transition:none}}
 
 #view .gift-sheet-wrap{overflow:hidden}
