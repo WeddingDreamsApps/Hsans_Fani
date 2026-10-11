@@ -798,6 +798,7 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 
 
 /* Mobile presentation only: all actions and data remain available. */
+.account-utility-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
 @media(max-width:800px){
   .main,.content,#view,.card,.card-body{min-width:0}
   .topbar{height:auto!important;min-height:0!important;display:flex;flex-wrap:wrap;gap:5px!important;padding:8px 10px!important;align-items:center}
@@ -835,6 +836,7 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
   .modal :is(.form-actions,.modal-foot){gap:8px;flex-wrap:wrap;padding-top:10px;margin-top:10px}
   .modal :is(.form-actions,.modal-foot) .button{min-height:42px}
   .file-row{gap:6px;min-width:0}.file-row>span{min-width:0;overflow-wrap:anywhere}
+  .user-workspace-head .account-utility-actions{justify-content:flex-end;margin-top:6px}
   .bottom-nav{padding:4px 5px max(6px,env(safe-area-inset-bottom));border-radius:14px 14px 0 0}.bottom-nav button{min-height:46px;border-radius:10px}
   button:focus-visible,a:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
 }
@@ -1726,10 +1728,10 @@ function timelineFilterControl(){const current=filter?['status',filter]:taskScop
     const bar=document.querySelector('.user-workspace-head');if(!bar)return;
     const button=document.createElement('button');button.className='doc-edit-icon';button.type='button';button.title='Periksa layanan akun';button.setAttribute('aria-label',button.title);button.innerHTML=icon('check');
     button.onclick=async()=>{button.disabled=true;try{const result=await rpc('checkAccountService');toast(result.message);}catch(error){toast(error.message);}finally{button.disabled=false;}};
-    bar.append(button);
+    const actions=document.createElement('div');actions.className='account-utility-actions';actions.setAttribute('aria-label','Alat pengelolaan akun');actions.append(button);bar.append(actions);
     const backup=document.createElement('button');backup.type='button';backup.className='doc-edit-icon';backup.title='Cadangkan seluruh data';backup.setAttribute('aria-label',backup.title);backup.innerHTML=icon('download');
     backup.onclick=async()=>{backup.disabled=true;try{const snapshot=await rpc('exportBackup'),url=URL.createObjectURL(new Blob([JSON.stringify(snapshot,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='siap-nikah-cadangan-'+localToday()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);toast('Cadangan data diunduh. Lampiran tetap tersimpan di Drive.');}catch(error){toast(error.message);}finally{backup.disabled=false;}};
-    bar.append(backup);
+    actions.append(backup);
   };
 })();
 
