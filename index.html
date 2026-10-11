@@ -201,7 +201,7 @@ var WeddingCore = (function () {
     if(index<0)rows.push(record);else rows[index]=record;
     return {record};
   }
-  function csv(rows){const keys=[...new Set(rows.flatMap(x=>Object.keys(x).filter(k=>!['payments','files'].includes(k))))];const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'<!-- CORE -->").replace(/"/g,'""')+'"';return '\uFEFF'+[keys,...rows.map(r=>keys.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');}
+  function csv(rows){const keys=[...new Set(rows.flatMap(x=>Object.keys(x).filter(k=>!['payments','files'].includes(k))))];const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'$&").replace(/"/g,'""')+'"';return '\uFEFF'+[keys,...rows.map(r=>keys.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');}
   function can(actor,key,write){if(actor?.owner)return true;if(key==='users')return false;return actor?.permissions?.[key]==='write'||(!write&&actor?.permissions?.[key]==='read');}
   function visible(db,actor){const copy=blank();for(const key of Object.keys(modules))copy[key]=can(actor,key,false)?db[key]:[];return copy;}
   return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,financeRows,financePaid,paidFinanceRows,totals,mutate,csv,can,visible};
@@ -3878,9 +3878,7 @@ var qrcode = function() {
       } else {
         switch (c) {
         case ' ' : return 36;
-        case '
-</body></html>
- : return 37;
+        case '$' : return 37;
         case '%' : return 38;
         case '*' : return 39;
         case '+' : return 40;
