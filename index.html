@@ -849,6 +849,7 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 }
 
 @media(max-width:800px){.topbar .topright{gap:4px!important;min-height:32px}.topbar .topright :is(button,a){width:30px!important;min-width:30px!important;height:32px!important;min-height:32px!important;padding:6px!important;display:inline-flex;align-items:center;justify-content:center;border-radius:9px}.topbar .topright svg{width:17px;height:17px}.topbar #gateway-signout{font-size:0!important;background:var(--tint);color:var(--pink)}.topbar #gateway-signout:before{content:"↪";font-size:21px;line-height:1}.topbar:not(:has(.finance-header)):not(:has(.guest-header))>.page-head{display:contents!important}.topbar:not(:has(.finance-header)):not(:has(.guest-header))>.page-head>div:first-child{flex:1 1 0!important;min-width:0}.topbar:not(:has(.finance-header)):not(:has(.guest-header))>.page-head h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px!important}.topbar:not(:has(.finance-header)):not(:has(.guest-header))>.page-head>.button{font-size:0!important;width:32px;min-width:32px;padding:7px!important;margin-left:0!important;min-height:32px!important;flex:0 0 32px}.topbar:not(:has(.finance-header)):not(:has(.guest-header))>.page-head>.button svg{width:18px;height:18px}.topbar:not(:has(.finance-header)):not(:has(.guest-header)) .topright{flex:0 0 auto!important;margin-left:0!important}.topbar:not(:has(.finance-header)):not(:has(.guest-header)){flex-wrap:nowrap!important;gap:5px!important;min-height:50px!important}}
+@media(max-width:800px){.topbar .wedding-settings-icon{flex:0 0 30px;width:30px;height:32px;padding:6px;border-radius:9px}.topbar .wedding-settings-icon svg{width:17px;height:17px}}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1341,7 +1342,7 @@ function integratedWorkspace(){
     const add=document.querySelector('.topbar #add-record');if(add){add.innerHTML=icon('plus')+(route==='savings'?'Catat tabungan':'Catat pengeluaran');}
   }
   if(route==='dashboard'&&C.can(principal,'profile',false)){
-    const p=db.profile[0]||{},card=document.createElement('section');card.className='card wedding-settings';card.innerHTML='<div><strong>Pengaturan pernikahan</strong><small>'+esc((p.name||'Mempelai pria')+' & '+(p.partner||'Mempelai wanita'))+' · '+esc(prettyDate(p.date))+'</small></div><button class="button secondary" id="wedding-settings">'+icon('edit')+'Data mempelai</button>';document.getElementById('view').prepend(card);document.getElementById('wedding-settings').onclick=()=>go('profile');
+    const head=document.querySelector('.topbar>.page-head'),button=document.createElement('button');button.type='button';button.className='wedding-settings-icon';button.id='wedding-settings';button.title='Edit data mempelai & pengaturan pernikahan';button.setAttribute('aria-label',button.title);button.innerHTML=icon('edit');button.onclick=()=>go('profile');head?.append(button);
   }
   if(route==='profile'){const heading=document.querySelector('.topbar h1');if(heading)heading.textContent='Pengaturan pernikahan';const back=document.createElement('button');back.className='button secondary';back.textContent='Kembali ke Dashboard';back.onclick=()=>go('dashboard');$('view').prepend(back);}
 }
