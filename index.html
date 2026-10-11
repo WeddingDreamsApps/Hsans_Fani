@@ -1245,7 +1245,9 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 #view .toolbar .search:has(#guest-qr-button){display:flex!important;align-items:center;gap:6px;min-width:0}
 #view .toolbar .search:has(#guest-qr-button) input{flex:1!important;width:0!important;min-width:0!important}
 #view .toolbar .search #guest-qr-button{flex:0 0 30px!important;width:30px!important;height:32px!important;margin:0!important;padding:5px!important}
-#view .toolbar .search #guest-qr-button svg{width:18px!important;height:18px!important;margin:0!important}
+#view .toolbar .search #guest-qr-button svg{position:static!important;inset:auto!important;transform:none!important;flex:none;width:18px!important;height:18px!important;margin:0!important}
+#view .toolbar .search:has(#guest-qr-button){background:var(--white);border:1px solid var(--line);border-radius:10px;padding-right:4px}
+#view .toolbar .search:has(#guest-qr-button) input{background:transparent!important;border:0!important;box-shadow:none!important}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
