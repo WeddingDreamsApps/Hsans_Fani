@@ -994,6 +994,8 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 
 .attachment-pdf-pages{max-height:60vh;overflow:auto;padding:8px;display:grid;gap:8px}.attachment-pdf-pages canvas{display:block;max-width:100%;height:auto;background:white;box-shadow:0 1px 6px #132a5020}
 
+.attachment-footer [aria-disabled="true"]{opacity:.55;pointer-events:none}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -1186,7 +1188,7 @@ async function openFile(key,x,fileId){
  const modal=$('modal');
  const cleanup=()=>{if(objectUrl){const old=objectUrl;objectUrl=null;setTimeout(()=>URL.revokeObjectURL(old),60000);}};
  const back=()=>{attachmentViewSequence++;cleanup();if(returnToEdit&&db[key]?.find(r=>r.id===x.id))edit(key,db[key].find(r=>r.id===x.id));else modal.close();};
- openModal('Lampiran · '+f.name,'<div class="attachment-preview"><div id="attachment-content" class="attachment-content" role="status">Memuat lampiran…</div><div class="attachment-footer"><button class="button secondary" id="download-doc" disabled>Download</button><button class="button" id="back-doc">Kembali</button></div></div>');
+ openModal('Lampiran · '+f.name,'<div class="attachment-preview"><div id="attachment-content" class="attachment-content" role="status">Memuat lampiran…</div><div class="attachment-footer"><a class="button secondary" id="download-doc" role="button" aria-disabled="true">Download</a><button class="button" id="back-doc">Kembali</button></div></div>');
  $('back-doc').onclick=back;modal.addEventListener('close',cleanup,{once:true});
  try{
   let blob,downloadUrl;
@@ -1198,8 +1200,8 @@ async function openFile(key,x,fileId){
   const isImage=/^image\/(png|jpeg|gif|webp)$/i.test(blob.type),isPdf=blob.type==='application/pdf';
   $('attachment-content').removeAttribute('role');
   $('attachment-content').innerHTML=isImage?'<img class="viewer attachment-image" alt="'+esc(f.name)+'" src="'+objectUrl+'">':isPdf?'<div id="attachment-pdf-pages" class="attachment-pdf-pages" role="status">Menampilkan PDF…</div>':'<div class="notice">Pratinjau format ini belum tersedia. Gunakan Download untuk menyimpan berkas.</div>';
-  $('download-doc').disabled=false;
-  $('download-doc').onclick=()=>{const a=document.createElement('a');a.href=downloadUrl;a.download=f.name;document.body.append(a);a.click();a.remove();};
+  $('download-doc').setAttribute('aria-disabled','false');
+  $('download-doc').href=downloadUrl;$('download-doc').download=f.name;
   if(isPdf){
    const pdfjs=await loadAttachmentPdf(),pdf=await pdfjs.getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false}).promise;
    if(sequence!==attachmentViewSequence||!modal.open){pdf.destroy();return;}
