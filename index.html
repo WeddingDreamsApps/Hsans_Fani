@@ -990,6 +990,8 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
  #view table.table.aligned-data-table.document-data-table td .aligned-mobile-details small+small:before{content:' · ';color:var(--pink)}
 }
 
+.attachment-preview{display:flex;flex-direction:column;gap:12px;min-width:0}.attachment-content{min-height:160px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface,#f5f7fc)}.attachment-content[role="status"]{display:grid;place-items:center;padding:24px;color:var(--muted);text-align:center}.attachment-content .viewer{display:block;width:100%;border:0;margin:0}.attachment-image{height:auto;max-height:65vh;object-fit:contain}.attachment-pdf{height:65vh;min-height:260px}.attachment-footer{display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;padding-top:8px}.attachment-footer .button{min-height:40px}.modal:has(.attachment-preview){width:min(850px,calc(100vw - 24px))}.modal:has(.attachment-preview) .modal-head h2{font-size:15px;overflow-wrap:anywhere}.modal:has(.attachment-preview) #close-modal{display:none}@media(max-width:600px){.modal:has(.attachment-preview) .modal-body{padding:12px}.attachment-pdf{height:60vh}.attachment-footer .button{flex:1}}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -1153,9 +1155,9 @@ edit=function(key,record){
 };
 function attachmentPanel(key,x,writable){
   const title=key==='budget'?'Invoice, nota & bukti pembayaran':key==='admin'?'Dokumen persyaratan':'Lampiran';
-  $('attachments').innerHTML='<h3>'+title+'</h3>'+(x.files||[]).map(f=>'<div class="file-row"><div><strong>'+esc(f.name)+'</strong><small>'+(f.previewOnly?'Berkas contoh di sesi ini':'Google Drive')+'</small></div><div class="file-actions"><button class="button secondary" data-file-view="'+esc(f.id)+'">View</button><button class="button secondary" data-file-download="'+esc(f.id)+'">Download</button>'+(writable?'<button class="button secondary" data-file-edit="'+esc(f.id)+'">Edit nama</button><button class="button secondary" data-file-replace="'+esc(f.id)+'">Ganti file</button>':'')+'</div></div>').join('')+(!(x.files||[]).length?'<p class="subtitle">Belum ada berkas. '+(key==='admin'?'Checkbox tersedia juga dapat digunakan untuk dokumen fisik.':'')+'</p>':'')+(writable?'<div class="upload-area"><label for="attachment">'+(key==='budget'?'Upload invoice / nota':'Upload dokumen')+'</label><p class="subtitle">'+(key==='budget'?'PDF, JPG, PNG':'PDF, Word, JPG, PNG')+' · maksimal 5 MB.'+(!live?' Pratinjau: berkas hanya tersedia selama sesi ini.':'')+'</p><input id="attachment" type="file" accept="'+(key==='budget'?'.pdf,.jpg,.jpeg,.png':'.pdf,.doc,.docx,.jpg,.jpeg,.png')+'"><div id="upload-error" role="alert"></div></div>':'');
+  $('attachments').innerHTML='<h3>'+title+'</h3>'+(x.files||[]).map(f=>'<div class="file-row"><div><strong>'+esc(f.name)+'</strong><small>'+(f.previewOnly?'Berkas contoh di sesi ini':'Google Drive')+'</small></div><div class="file-actions"><button class="button secondary" data-file-view="'+esc(f.id)+'">View</button>'+(writable?'<button class="button secondary" data-file-edit="'+esc(f.id)+'">Edit nama</button><button class="button secondary" data-file-replace="'+esc(f.id)+'">Ganti file</button>':'')+'</div></div>').join('')+(!(x.files||[]).length?'<p class="subtitle">Belum ada berkas. '+(key==='admin'?'Checkbox tersedia juga dapat digunakan untuk dokumen fisik.':'')+'</p>':'')+(writable?'<div class="upload-area"><label for="attachment">'+(key==='budget'?'Upload invoice / nota':'Upload dokumen')+'</label><p class="subtitle">'+(key==='budget'?'PDF, JPG, PNG':'PDF, Word, JPG, PNG')+' · maksimal 5 MB.'+(!live?' Pratinjau: berkas hanya tersedia selama sesi ini.':'')+'</p><input id="attachment" type="file" accept="'+(key==='budget'?'.pdf,.jpg,.jpeg,.png':'.pdf,.doc,.docx,.jpg,.jpeg,.png')+'"><div id="upload-error" role="alert"></div></div>':'');
   let replacement=null,uploadRequestId=uuid();
-  document.querySelectorAll('[data-file-view]').forEach(b=>b.onclick=()=>openFile(key,x,b.dataset.fileView,false));document.querySelectorAll('[data-file-download]').forEach(b=>b.onclick=()=>openFile(key,x,b.dataset.fileDownload,true));
+  document.querySelectorAll('[data-file-view]').forEach(b=>b.onclick=()=>openFile(key,x,b.dataset.fileView,false));
   document.querySelectorAll('[data-file-edit]').forEach(b=>b.onclick=async()=>{const f=x.files.find(f=>f.id===b.dataset.fileEdit),name=prompt('Nama dokumen yang ditampilkan',f.name);if(!name)return;try{await save({collection:key,id:x.id,version:x.version,action:'fileEdit',fileId:f.id,fileName:name,requestId:uuid()});edit(key,db[key].find(r=>r.id===x.id));}catch(e){toast(e.message);}});
   document.querySelectorAll('[data-file-replace]').forEach(b=>b.onclick=()=>{replacement=b.dataset.fileReplace;uploadRequestId=uuid();$('attachment').click();});
   if($('attachment'))$('attachment').onchange=async e=>{
@@ -1169,26 +1171,28 @@ function attachmentPanel(key,x,writable){
     }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';}
   };
 }
-function driveAttachmentUrl(file,downloadIt){
- if(!file||!/^[-\w]{10,200}$/.test(file.id||''))return null;
- return downloadIt?'https://drive.google.com/uc?export=download&id='+encodeURIComponent(file.id):'https://drive.google.com/file/d/'+encodeURIComponent(file.id)+'/view';
-}
-async function openFile(key,x,fileId,downloadIt){
-  const f=x.files.find(f=>f.id===fileId);let blob;
-  if(!f){toast('Lampiran tidak tersedia.');return;}
-  // Drive renders and downloads privately with the viewer's Google account.
-  // Avoid fetching/base64 decoding the entire file through the Worker first.
-  if(live&&!f.previewOnly){
-    const direct=driveAttachmentUrl(f,downloadIt);
-    if(direct){const link=document.createElement('a');link.href=direct;link.target=downloadIt?'_self':'_blank';link.rel='noopener noreferrer';document.body.append(link);link.click();link.remove();return;}
-  }
-  try{
-    if(live){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});blob=new Blob([Uint8Array.from(atob(r.base64),c=>c.charCodeAt(0))],{type:r.mime});}
-    else{blob=localFiles.get(fileId);if(!blob)throw new Error('Berkas contoh belum diunggah pada sesi ini.');}
-    const url=URL.createObjectURL(blob);
-    if(downloadIt){const a=document.createElement('a');a.href=url;a.download=f.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
-    else{const isImage=blob.type.startsWith('image/'),isPdf=blob.type==='application/pdf';openModal('View · '+f.name,(isImage?'<img class="viewer" alt="'+esc(f.name)+'" src="'+url+'">':isPdf?'<iframe class="viewer" title="'+esc(f.name)+'" src="'+url+'"></iframe>':'<div class="notice">Dokumen Word dapat dibuka setelah diunduh. Gunakan Ganti file untuk mengunggah hasil edit.</div>')+'<div class="form-actions"><a class="button secondary" href="'+url+'" download="'+esc(f.name)+'">Download</a><button class="button" id="back-doc">Kembali ke catatan</button></div>');$('back-doc').onclick=()=>{URL.revokeObjectURL(url);edit(key,db[key].find(r=>r.id===x.id));};}
-  }catch(e){toast(e.message);}
+let attachmentViewSequence=0;
+async function openFile(key,x,fileId){
+ const f=(x.files||[]).find(f=>f.id===fileId);
+ if(!f){toast('Lampiran tidak tersedia.');return;}
+ const returnToEdit=!!$('edit-form'),sequence=++attachmentViewSequence;let objectUrl=null;
+ const modal=$('modal');
+ const cleanup=()=>{if(objectUrl){const old=objectUrl;objectUrl=null;setTimeout(()=>URL.revokeObjectURL(old),60000);}};
+ const back=()=>{attachmentViewSequence++;cleanup();if(returnToEdit&&db[key]?.find(r=>r.id===x.id))edit(key,db[key].find(r=>r.id===x.id));else modal.close();};
+ openModal('Lampiran · '+f.name,'<div class="attachment-preview"><div id="attachment-content" class="attachment-content" role="status">Memuat lampiran…</div><div class="attachment-footer"><button class="button secondary" id="download-doc" disabled>Download</button><button class="button" id="back-doc">Kembali</button></div></div>');
+ $('back-doc').onclick=back;modal.addEventListener('close',cleanup,{once:true});
+ try{
+  let blob;
+  if(live&&!f.previewOnly){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});const binary=atob(r.base64),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);blob=new Blob([bytes],{type:r.mime||f.mime||'application/octet-stream'});}
+  else{blob=localFiles.get(fileId);if(!blob)throw new Error('Berkas belum tersedia di sesi ini.');}
+  if(sequence!==attachmentViewSequence||!modal.open||!$('attachment-content'))return;
+  objectUrl=URL.createObjectURL(blob);
+  const isImage=/^image\/(png|jpeg|gif|webp)$/i.test(blob.type),isPdf=blob.type==='application/pdf';
+  $('attachment-content').removeAttribute('role');
+  $('attachment-content').innerHTML=isImage?'<img class="viewer attachment-image" alt="'+esc(f.name)+'" src="'+objectUrl+'">':isPdf?'<iframe class="viewer attachment-pdf" title="Pratinjau '+esc(f.name)+'" src="'+objectUrl+'#toolbar=0"></iframe>':'<div class="notice">Pratinjau format ini belum tersedia. Gunakan Download untuk menyimpan berkas.</div>';
+  $('download-doc').disabled=false;
+  $('download-doc').onclick=()=>{const a=document.createElement('a');a.href=objectUrl;a.download=f.name;document.body.append(a);a.click();a.remove();};
+ }catch(e){if(sequence!==attachmentViewSequence||!modal.open||!$('attachment-content'))return;$('attachment-content').textContent='Lampiran belum dapat dimuat. '+e.message;}
 }
 
 /* Presentation helpers preserve all existing handlers and data. */
