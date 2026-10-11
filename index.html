@@ -992,6 +992,8 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 
 .attachment-preview{display:flex;flex-direction:column;gap:12px;min-width:0}.attachment-content{min-height:160px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface,#f5f7fc)}.attachment-content[role="status"]{display:grid;place-items:center;padding:24px;color:var(--muted);text-align:center}.attachment-content .viewer{display:block;width:100%;border:0;margin:0}.attachment-image{height:auto;max-height:65vh;object-fit:contain}.attachment-pdf{height:65vh;min-height:260px}.attachment-footer{display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;padding-top:8px}.attachment-footer .button{min-height:40px}.modal:has(.attachment-preview){width:min(850px,calc(100vw - 24px))}.modal:has(.attachment-preview) .modal-head h2{font-size:15px;overflow-wrap:anywhere}.modal:has(.attachment-preview) #close-modal{display:none}@media(max-width:600px){.modal:has(.attachment-preview) .modal-body{padding:12px}.attachment-pdf{height:60vh}.attachment-footer .button{flex:1}}
 
+.attachment-pdf-pages{max-height:60vh;overflow:auto;padding:8px;display:grid;gap:8px}.attachment-pdf-pages canvas{display:block;max-width:100%;height:auto;background:white;box-shadow:0 1px 6px #132a5020}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -1171,7 +1173,12 @@ function attachmentPanel(key,x,writable){
     }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';}
   };
 }
-let attachmentViewSequence=0;
+let attachmentViewSequence=0,attachmentPdfLoader=null;
+function loadAttachmentPdf(){
+ if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+ if(!attachmentPdfLoader)attachmentPdfLoader=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';script.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';resolve(window.pdfjsLib);};script.onerror=()=>{attachmentPdfLoader=null;reject(new Error('Pembaca PDF belum dapat dimuat.'));};document.head.append(script);});
+ return attachmentPdfLoader;
+}
 async function openFile(key,x,fileId){
  const f=(x.files||[]).find(f=>f.id===fileId);
  if(!f){toast('Lampiran tidak tersedia.');return;}
@@ -1182,16 +1189,28 @@ async function openFile(key,x,fileId){
  openModal('Lampiran · '+f.name,'<div class="attachment-preview"><div id="attachment-content" class="attachment-content" role="status">Memuat lampiran…</div><div class="attachment-footer"><button class="button secondary" id="download-doc" disabled>Download</button><button class="button" id="back-doc">Kembali</button></div></div>');
  $('back-doc').onclick=back;modal.addEventListener('close',cleanup,{once:true});
  try{
-  let blob;
-  if(live&&!f.previewOnly){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});const binary=atob(r.base64),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);blob=new Blob([bytes],{type:r.mime||f.mime||'application/octet-stream'});}
+  let blob,downloadUrl;
+  if(live&&!f.previewOnly){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});const binary=atob(r.base64),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);blob=new Blob([bytes],{type:r.mime||f.mime||'application/octet-stream'});downloadUrl='data:'+blob.type+';base64,'+r.base64;}
   else{blob=localFiles.get(fileId);if(!blob)throw new Error('Berkas belum tersedia di sesi ini.');}
   if(sequence!==attachmentViewSequence||!modal.open||!$('attachment-content'))return;
   objectUrl=URL.createObjectURL(blob);
+  if(!downloadUrl)downloadUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
   const isImage=/^image\/(png|jpeg|gif|webp)$/i.test(blob.type),isPdf=blob.type==='application/pdf';
   $('attachment-content').removeAttribute('role');
-  $('attachment-content').innerHTML=isImage?'<img class="viewer attachment-image" alt="'+esc(f.name)+'" src="'+objectUrl+'">':isPdf?'<iframe class="viewer attachment-pdf" title="Pratinjau '+esc(f.name)+'" src="'+objectUrl+'#toolbar=0"></iframe>':'<div class="notice">Pratinjau format ini belum tersedia. Gunakan Download untuk menyimpan berkas.</div>';
+  $('attachment-content').innerHTML=isImage?'<img class="viewer attachment-image" alt="'+esc(f.name)+'" src="'+objectUrl+'">':isPdf?'<div id="attachment-pdf-pages" class="attachment-pdf-pages" role="status">Menampilkan PDF…</div>':'<div class="notice">Pratinjau format ini belum tersedia. Gunakan Download untuk menyimpan berkas.</div>';
   $('download-doc').disabled=false;
-  $('download-doc').onclick=()=>{const a=document.createElement('a');a.href=objectUrl;a.download=f.name;document.body.append(a);a.click();a.remove();};
+  $('download-doc').onclick=()=>{const a=document.createElement('a');a.href=downloadUrl;a.download=f.name;document.body.append(a);a.click();a.remove();};
+  if(isPdf){
+   const pdfjs=await loadAttachmentPdf(),pdf=await pdfjs.getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false}).promise;
+   if(sequence!==attachmentViewSequence||!modal.open){pdf.destroy();return;}
+   const pages=$('attachment-pdf-pages');pages.textContent='';pages.removeAttribute('role');
+   try{for(let n=1;n<=pdf.numPages;n++){
+    if(sequence!==attachmentViewSequence||!modal.open)break;
+    const page=await pdf.getPage(n),base=page.getViewport({scale:1}),width=Math.max(240,pages.clientWidth-16),scale=width/base.width,ratio=Math.min(window.devicePixelRatio||1,2),viewport=page.getViewport({scale:scale*ratio});
+    const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);canvas.style.width='100%';canvas.setAttribute('aria-label','Halaman '+n+' dari '+pdf.numPages);pages.append(canvas);
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;page.cleanup();
+   }}finally{pdf.destroy();}
+  }
  }catch(e){if(sequence!==attachmentViewSequence||!modal.open||!$('attachment-content'))return;$('attachment-content').textContent='Lampiran belum dapat dimuat. '+e.message;}
 }
 
