@@ -1119,6 +1119,31 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
  #view .compact-invitation-table .invite-line-meta{gap:1px 5px;font-size:11px!important}
 }
 
+/* Separate invitation fields into their own column headings. */
+#view table.table.invitation-column-table{table-layout:fixed;width:100%;min-width:0!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(1){width:23%!important;text-align:left!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(2){width:13%!important;text-align:center!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(3){width:17%!important;text-align:center!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(4){width:16%!important;text-align:left!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(5){width:14%!important;text-align:center!important}
+#view table.table.invitation-column-table :is(th,td):nth-child(6){width:17%!important;text-align:center!important}
+#view table.table.invitation-column-table td{white-space:normal!important;overflow-wrap:anywhere;font-size:13px!important;line-height:1.45!important;padding:8px 6px!important}
+#view table.table.invitation-column-table thead tr th:nth-child(n){white-space:normal!important;overflow-wrap:normal;letter-spacing:0!important;padding:7px 4px!important;font-size:11px!important}
+#view table.table.invitation-column-table .invite-address{display:block!important;font-size:11px!important;line-height:1.45;color:var(--muted);white-space:normal!important}
+#view table.table.invitation-column-table .invite-status-line{flex-wrap:wrap;gap:3px}
+#view table.table.invitation-column-table .badge{white-space:normal!important;line-height:1.35!important;font-size:11px!important;text-align:center;padding:3px 4px}
+#view table.table.invitation-column-table .invitation-actions{gap:3px}
+@media(max-width:800px){
+ #view table.table.invitation-column-table td{font-size:11px!important;padding:7px 3px!important}
+ #view table.table.invitation-column-table thead tr th:nth-child(n){font-size:10px!important;line-height:14px!important;padding:7px 2px!important}
+ #view table.table.invitation-column-table .invite-line strong{font-size:12px!important}
+ #view table.table.invitation-column-table .invite-address{font-size:10px!important}
+ #view table.table.invitation-column-table .badge{font-size:10px!important}
+ #view table.table.invitation-column-table .doc-edit-icon{width:24px!important;min-width:24px!important;height:30px!important;min-height:30px!important;padding:4px!important}
+ #view table.table.invitation-column-table .doc-edit-icon svg{width:15px;height:15px}
+ #view table.table.invitation-column-table .invite-status-line .invite-dispatch{display:none}
+}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -1941,7 +1966,7 @@ if(typeof module!=='undefined')module.exports=WeddingInvitations;
 const I=WeddingInvitations;
 function invitationGuestRows(){return db.guests.filter(row=>I.matches(row,filter)&&(!search||[row.name,row.group,row.address,row.contact,I.read(row).note,I.read(row).side].join(' ').toLowerCase().includes(search.toLowerCase())));}
 function drawInvitationRows(){
- const rows=invitationGuestRows();$('records').innerHTML=rows.length?'<div class="table-wrap"><table class="table standard-data-table invitation-table compact-invitation-table"><thead><tr><th>Undangan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+rows.map(row=>{const meta=I.read(row),actual=C.attendance(row).length,details=I.details(row),detailTitle=details.map(v=>v.label+': '+v.value).join(' · '),presence=actual?'Hadir '+numberFormat(actual):'Belum hadir';return '<tr data-row-id="'+esc(row.id)+'"><td title="'+esc(row.name+' · '+detailTitle)+'"><div class="invite-line"><strong>'+esc(row.name)+'</strong><span class="invite-line-meta">'+details.map(detail=>'<span class="invite-data-detail"><span class="invite-data-label">'+esc(detail.label)+': </span>'+esc(detail.value)+'</span>').join('')+'</span></div></td><td><div class="invite-status-line"><span class="invite-dispatch '+(I.delivered(meta)?'delivered':'')+'" role="img" aria-label="'+esc(I.channels(meta).join(', '))+'" title="'+esc(I.channels(meta).join(', '))+'">'+icon(I.delivered(meta)?'check':'clock')+'</span><span class="badge '+(actual?'green':'')+'" title="'+esc(presence)+'">'+esc(presence)+'</span></div></td><td><div class="invitation-actions"><button class="doc-edit-icon" data-invite-edit="'+esc(row.id)+'" aria-label="Edit undangan '+esc(row.name)+'" title="Edit undangan">'+icon('edit')+'</button><button class="doc-edit-icon" data-invite-arrival="'+esc(row.id)+'" aria-label="Buku tamu '+esc(row.name)+'" title="Catat kehadiran & pemberian">'+icon('guests')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>':'<div class="empty"><p>Belum ada undangan yang sesuai.</p></div>';
+ const rows=invitationGuestRows();$('records').innerHTML=rows.length?'<div class="table-wrap"><table class="table standard-data-table invitation-table compact-invitation-table invitation-column-table"><thead><tr><th>Undangan</th><th>Kelompok</th><th title="Pihak pengundang">Pengundang</th><th>Catatan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'+rows.map(row=>{const meta=I.read(row),actual=C.attendance(row).length,details=I.details(row),detailTitle=details.map(v=>v.label+': '+v.value).join(' · '),presence=actual?'Hadir '+numberFormat(actual):'Belum hadir';return '<tr data-row-id="'+esc(row.id)+'"><td><div class="invite-line"><strong>'+esc(row.name)+'</strong><small class="invite-address">'+esc([meta.type,row.address].filter(Boolean).join(' · '))+'</small></div></td><td>'+esc(row.group||'—')+'</td><td>'+esc(meta.side)+'</td><td class="invite-remark">'+esc(meta.note||'—')+'</td><td><div class="invite-status-line"><span class="invite-dispatch '+(I.delivered(meta)?'delivered':'')+'" role="img" aria-label="'+esc(I.channels(meta).join(', '))+'" title="'+esc(I.channels(meta).join(', '))+'">'+icon(I.delivered(meta)?'check':'clock')+'</span><span class="badge '+(actual?'green':'')+'" title="'+esc(presence)+'">'+esc(presence)+'</span></div></td><td><div class="invitation-actions"><button class="doc-edit-icon" data-invite-edit="'+esc(row.id)+'" aria-label="Edit undangan '+esc(row.name)+'" title="Edit undangan">'+icon('edit')+'</button><button class="doc-edit-icon" data-invite-arrival="'+esc(row.id)+'" aria-label="Buku tamu '+esc(row.name)+'" title="Catat kehadiran & pemberian">'+icon('guests')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>':'<div class="empty"><p>Belum ada undangan yang sesuai.</p></div>';
  $('records').querySelectorAll('[data-invite-edit]').forEach(b=>b.onclick=()=>edit('guests',db.guests.find(x=>x.id===b.dataset.inviteEdit)));
  $('records').querySelectorAll('[data-invite-arrival]').forEach(b=>b.onclick=()=>receptionModal(db.guests.find(x=>x.id===b.dataset.inviteArrival)));
  $('export').onclick=()=>download('daftar-undangan.csv',C.csv(rows.map(row=>({Nama:row.name,Kelompok:row.group,Alamat:row.address,WhatsApp:row.contact,Jenis:I.read(row).type,Pihak:I.read(row).side,Pengiriman:I.channels(I.read(row)).join('; '),Konfirmasi:I.rsvp(row),'Jumlah konfirmasi':C.attendance(row).length,'Hadir aktual':C.attendance(row).length,Catatan:I.read(row).note}))), 'text/csv;charset=utf-8');
