@@ -721,6 +721,8 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
  #view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(6),#view .document-data-table[data-prep-cost-ready] :is(th,td):nth-child(7){width:8%!important}
 }
 #edit-form[data-prep-editor] .prep-location-field{grid-column:1/-1}
+#edit-form[data-prep-editor] .prep-reuse-field{grid-column:1/-1}
+.prep-reuse-hint{font-size:11px;line-height:1.5;color:var(--muted)}.prep-reuse-hint:empty{display:none}.prep-reuse-hint .text-button{padding:0;font-size:inherit}
 .prep-form-guide{margin-top:5px;padding:10px 12px;background:var(--tint);border:1px solid var(--line);border-radius:9px;color:var(--ink);font-size:12px;line-height:1.6}
 .prep-form-hint{margin:0 0 4px;color:var(--muted);font-size:11px}
 .prep-form-guide ol{padding-left:17px;margin:0;display:grid;gap:4px}
@@ -1374,6 +1376,7 @@ let prepPlace='all';
 function prepCatalog(placeId){const places=placeId==='kua'?['desa','sehat','asal','kua']:[placeId];return [...new Set(PREP_PLACES.filter(place=>places.includes(place.id)).flatMap(place=>place.docs))];}
 function prepRequirementType(name,placeId){const origin=PREP_PLACES.find(place=>place.docs.includes(name))?.id||placeId;return ['rt','asal'].includes(origin)?'Bersyarat':['akad','resepsi'].includes(origin)?'Tahapan':'Umum';}
 function prepDuplicate(rows,name,target,excludeId){const normalized=String(name||'').trim().replace(/\s+/g,' ').toLowerCase();return rows.find(row=>row.id!==excludeId&&String(row.name||'').trim().replace(/\s+/g,' ').toLowerCase()===normalized&&(kuaTarget(row)===target||kuaTarget(row)==='Kedua mempelai'||target==='Kedua mempelai'));}
+function prepReusableFields(record){return {name:record.name,requirementType:record.requirementType||'Umum'};}
 function prepProgress(rows){const done=rows.filter(row=>kuaRowStatus(row)==='Selesai').length;return {done,total:rows.length,percent:rows.length?Math.round(done/rows.length*100):0};}
 function prepRecordPlace(row){const tag=(row.source||'').match(/[#&]peta=([a-z]+)/)?.[1];if(PREP_PLACES.some(p=>p.id===tag))return tag;return PREP_PLACES.find(p=>p.match.test(row.name||''))?.id||'kua';}
 function prepMatchesPlace(row,placeId){const primary=prepRecordPlace(row);if(primary===placeId)return true;return placeId==='kua'&&['desa','sehat','asal'].includes(primary)&&prepCatalog('kua').some(name=>name.trim().toLowerCase()===(row.name||'').trim().toLowerCase());}
@@ -1424,6 +1427,13 @@ edit=function(key,record){
  $('prep-requirement').onchange=pick;const ownerChange=$('field-owner').onchange;$('field-owner').onchange=e=>{ownerChange?.(e);choices();};
  const guide=()=>{const place=PREP_PLACES.find(p=>p.id===$('prep-location').value);$('prep-form-guide').innerHTML=prepGuidance(place.id);choices();$('prep-form-guide').querySelectorAll('[data-prep-form-link]').forEach(b=>b.onclick=()=>{if(!confirm('Buka fitur terkait? Perubahan yang belum disimpan akan ditinggalkan.'))return;$('modal').close();go(b.dataset.prepFormLink);});};
  guide();$('prep-location').onchange=guide;
+ const reusable=db.admin.filter(item=>item.id!==record?.id);
+ grid.insertAdjacentHTML('afterbegin','<div class="field full prep-reuse-field"><label for="prep-reuse">Pakai persyaratan serupa (opsional)</label><select id="prep-reuse"><option value="">Pilih dari data yang sudah ada</option>'+reusable.map(item=>'<option value="'+esc(item.id)+'">'+esc(item.name)+' · '+esc(kuaTarget(item))+'</option>').join('')+'</select><div id="prep-reuse-hint" class="prep-reuse-hint" aria-live="polite"></div></div>');
+ const reuseHint=()=>{const duplicate=prepDuplicate(db.admin,nameInput.value,$('field-owner').value,record?.id),host=$('prep-reuse-hint');host.innerHTML=duplicate?'Sudah ada untuk mempelai ini. <button type="button" class="text-button" id="prep-open-original">Edit data asal</button>':'';if($('prep-open-original'))$('prep-open-original').onclick=()=>edit('admin',duplicate);};
+ $('prep-reuse').onchange=()=>{const sourceRecord=reusable.find(item=>item.id===$('prep-reuse').value);if(!sourceRecord){$('prep-reuse-hint').textContent='';return;}const fields=prepReusableFields(sourceRecord);nameInput.value=fields.name;$('field-requirementType').value=fields.requirementType;choices();reuseHint();};
+ const targetChanged=$('field-owner').onchange;$('field-owner').onchange=e=>{targetChanged?.(e);reuseHint();};
+ const requirementChanged=$('prep-requirement').onchange;$('prep-requirement').onchange=e=>{requirementChanged?.(e);reuseHint();};
+ nameInput.addEventListener('input',reuseHint);
  $('modal-title').textContent=(record?'Edit data':'Tambah data')+' persiapan';
  $('modal-body').querySelector('.workflow-link')?.remove();
  $('modal-body').querySelector(':scope > .subtitle')?.remove();
