@@ -858,49 +858,62 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 .finance-mobile-metadata{display:none!important}@media(max-width:800px){#view.finance-workspace .finance-table :is(th,td):nth-child(1){width:34%!important}#view.finance-workspace .finance-table :is(th,td):nth-child(3){width:20%!important}#view.finance-workspace .finance-table :is(th,td):nth-child(4){width:22%!important}#view.finance-workspace .finance-table :is(th,td):nth-child(7){width:24%!important}#view.finance-workspace .finance-table :is(th,td){padding:10px 4px!important;vertical-align:top!important;line-height:1.45}#view.finance-workspace .finance-table th{padding-block:9px!important;font-size:10px!important;white-space:nowrap!important}#view.finance-workspace .finance-table td:first-child>small:not(.finance-mobile-metadata):not(.finance-mobile-detail){display:none!important}#view.finance-workspace .finance-table .finance-mobile-metadata{display:block!important;font-size:10px!important;line-height:1.45;white-space:normal!important;margin-top:3px!important}#view.finance-workspace .finance-table td strong{font-size:12px!important;font-weight:650;line-height:1.4}#view.finance-workspace .finance-table td:nth-child(3),#view.finance-workspace .finance-table td:nth-child(4){font-family:inherit;font-size:12px!important;font-weight:600;letter-spacing:-.4px;white-space:nowrap!important;font-variant-numeric:tabular-nums}#view.finance-workspace .finance-table td:nth-child(4)>small{font-size:10px!important;color:var(--pink);font-weight:500!important;margin-top:4px}#view.finance-workspace .finance-actions{flex-wrap:nowrap!important;gap:2px;align-items:center;justify-content:flex-end;margin:0;max-width:none}#view.finance-workspace .finance-actions .doc-edit-icon{box-sizing:border-box;width:24px!important;min-width:24px!important;max-width:24px!important;height:30px!important;min-height:30px!important;padding:4px!important;flex:0 0 24px;display:inline-flex!important;align-items:center;justify-content:center;border-radius:7px}#view.finance-workspace .finance-actions .doc-edit-icon svg{width:15px;height:15px}#view.finance-workspace .finance-table .finance-mobile-detail{font-size:10px!important;margin-top:2px;color:var(--muted);line-height:1.45}}
 
 /* Seserahan is the shared visual reference across record lists. */
-#view table.aligned-data-table{width:100%;min-width:0!important;border-collapse:collapse;table-layout:fixed}
-#view table.aligned-data-table tr{box-shadow:none!important;border-radius:0!important}
-#view table.aligned-data-table :is(th,td){padding:12px 14px!important;vertical-align:top!important;line-height:1.45;white-space:normal!important;overflow-wrap:anywhere}
-#view table.aligned-data-table th{background:#eef3ff!important;color:#365bb4!important;font-size:12px!important;letter-spacing:.025em}
-#view table.aligned-data-table td{background:#fff!important;color:var(--ink);font-size:14px!important;border-bottom:1px solid var(--line)}
-#view table.aligned-data-table tbody tr:nth-child(even) td{background:#f6f8fd!important}
-#view table.aligned-data-table td :is(strong,h3){font-size:16px!important;font-weight:650;line-height:1.4;margin:0;white-space:normal!important}
-#view table.aligned-data-table td small{display:block;color:var(--muted);font-size:12px!important;line-height:1.5;margin-top:3px}
-#view table.aligned-data-table .badge{font-size:12px!important;padding:4px 6px;line-height:1.4;white-space:normal}
-#view table.aligned-data-table td:last-child :is(.gift-actions,.finance-actions,.timeline-actions,.invitation-actions,.doc-actions,.user-actions){display:flex!important;align-items:center;justify-content:flex-end;flex-wrap:nowrap!important;gap:3px;max-width:none!important;margin:0}
-#view table.aligned-data-table .doc-edit-icon{display:inline-flex!important;align-items:center;justify-content:center;width:30px;min-width:30px;height:32px;min-height:32px!important;padding:5px!important;border-radius:8px;background:#eaf0fc!important;color:#3c61b9!important;flex-shrink:0}
+#view table.table.aligned-data-table{width:100%;min-width:0!important;border-collapse:collapse;table-layout:fixed}
+#view table.table.aligned-data-table tr{box-shadow:none!important;border-radius:0!important}
+#view table.table.aligned-data-table :is(th,td){padding:12px 14px!important;vertical-align:top!important;line-height:1.45;white-space:normal!important;overflow-wrap:anywhere}
+#view table.table.aligned-data-table th{background:#eef3ff!important;color:#365bb4!important;font-size:12px!important;letter-spacing:.025em}
+#view table.table.aligned-data-table td{background:#fff!important;color:var(--ink);font-size:14px!important;border-bottom:1px solid var(--line)}
+#view table.table.aligned-data-table tbody tr:nth-child(even) td{background:#f6f8fd!important}
+#view table.table.aligned-data-table td :is(strong,h3){font-size:16px!important;font-weight:650;line-height:1.4;margin:0;white-space:normal!important}
+#view table.table.aligned-data-table td small{display:block;color:var(--muted);font-size:12px!important;line-height:1.5;margin-top:3px}
+#view table.table.aligned-data-table .badge{font-size:12px!important;padding:4px 6px;line-height:1.4;white-space:normal}
+#view table.table.aligned-data-table td:last-child :is(.gift-actions,.finance-actions,.timeline-actions,.invitation-actions,.doc-actions,.user-actions){display:flex!important;align-items:center;justify-content:flex-end;flex-wrap:nowrap!important;gap:3px;max-width:none!important;margin:0}
+#view table.table.aligned-data-table .doc-edit-icon{display:inline-flex!important;align-items:center;justify-content:center;width:30px;min-width:30px;height:32px;min-height:32px!important;padding:5px!important;border-radius:8px;background:#eaf0fc!important;color:#3c61b9!important;flex-shrink:0}
 .aligned-mobile-details,.aligned-mobile-action{display:none!important}
-html[data-theme="dark"] #view table.aligned-data-table td{background:#111a2e!important}
-html[data-theme="dark"] #view table.aligned-data-table tbody tr:nth-child(even) td{background:#142037!important}
-html[data-theme="dark"] #view table.aligned-data-table th{background:#172641!important;color:#b6caff!important}
-html[data-theme="dark"] #view table.aligned-data-table .doc-edit-icon{background:#203354!important;color:#bfd0ff!important}
+html[data-theme="dark"] #view table.table.aligned-data-table td{background:#111a2e!important}
+html[data-theme="dark"] #view table.table.aligned-data-table tbody tr:nth-child(even) td{background:#142037!important}
+html[data-theme="dark"] #view table.table.aligned-data-table th{background:#172641!important;color:#b6caff!important}
+html[data-theme="dark"] #view table.table.aligned-data-table .doc-edit-icon{background:#203354!important;color:#bfd0ff!important}
 @media(max-width:800px){
- #view table.aligned-data-table{display:table!important}
- #view table.aligned-data-table thead{display:table-header-group!important}
- #view table.aligned-data-table tbody{display:table-row-group!important}
- #view table.aligned-data-table tr{display:table-row!important;padding:0!important;margin:0!important}
- #view table.aligned-data-table :is(th,td){display:table-cell!important;padding:10px 4px!important;font-size:12px!important;overflow:visible!important}
- #view table.aligned-data-table :is(th,td).aligned-secondary{display:none!important}
- #view table.aligned-data-table td:before,#view table.aligned-data-table td:after{display:none!important}
- #view table.aligned-data-table th{font-size:10px!important}
- #view table.aligned-data-table td :is(strong,h3){font-size:14px!important}
- #view table.aligned-data-table td small{font-size:10px!important;line-height:1.45}
- #view table.aligned-data-table .badge{font-size:10px!important;padding:3px 4px}
- #view table.aligned-data-table .doc-edit-icon{width:24px!important;min-width:24px!important;max-width:24px!important;height:30px!important;min-height:30px!important;padding:4px!important;flex:0 0 24px!important}
- #view table.aligned-data-table .doc-edit-icon svg{width:15px;height:15px}
- #view table.aligned-data-table .aligned-mobile-details{display:block!important;margin-top:4px}
- #view table.aligned-data-table .aligned-mobile-action{display:inline-flex!important}
- #view table.aligned-data-table .gift-item-line{gap:4px}
- #view table.aligned-data-table .gift-category{font-size:10px;max-width:100%}
- #view table.aligned-data-table :is(.gift-price,.prep-cost-cell,.task-cost-cell){font-variant-numeric:tabular-nums;font-family:inherit;text-align:left}
+ #view table.table.aligned-data-table{display:table!important}
+ #view table.table.aligned-data-table thead{display:table-header-group!important}
+ #view table.table.aligned-data-table tbody{display:table-row-group!important}
+ #view table.table.aligned-data-table tr{display:table-row!important;padding:0!important;margin:0!important}
+ #view table.table.aligned-data-table :is(th,td){display:table-cell!important;padding:10px 4px!important;font-size:12px!important;overflow:visible!important}
+ #view table.table.aligned-data-table :is(th,td).aligned-secondary{display:none!important}
+ #view table.table.aligned-data-table td:before,#view table.table.aligned-data-table td:after{display:none!important}
+ #view table.table.aligned-data-table th{font-size:10px!important}
+ #view table.table.aligned-data-table td :is(strong,h3){font-size:14px!important}
+ #view table.table.aligned-data-table td small{font-size:10px!important;line-height:1.45}
+ #view table.table.aligned-data-table .badge{font-size:10px!important;padding:3px 4px}
+ #view table.table.aligned-data-table .doc-edit-icon{width:24px!important;min-width:24px!important;max-width:24px!important;height:30px!important;min-height:30px!important;padding:4px!important;flex:0 0 24px!important}
+ #view table.table.aligned-data-table .doc-edit-icon svg{width:15px;height:15px}
+ #view table.table.aligned-data-table .aligned-mobile-details{display:block!important;margin-top:4px}
+ #view table.table.aligned-data-table .aligned-mobile-action{display:inline-flex!important}
+ #view table.table.aligned-data-table .gift-item-line{gap:4px}
+ #view table.table.aligned-data-table .gift-category{font-size:10px;max-width:100%}
+ #view table.table.aligned-data-table :is(.gift-price,.prep-cost-cell,.task-cost-cell){font-variant-numeric:tabular-nums;font-family:inherit;text-align:left}
 }
 
-@media(max-width:800px){#view table.aligned-data-table :is(th,td).aligned-cell{width:var(--row-width)!important}}
+@media(max-width:800px){#view table.table.aligned-data-table :is(th,td).aligned-cell{width:var(--row-width)!important}}
 
 
-#view table.aligned-data-table td .currency{display:none!important}
-#view table.aligned-data-table td .amount{font-family:inherit;font-size:inherit;line-height:1.45;font-variant-numeric:tabular-nums}
+#view table.table.aligned-data-table td .currency{display:none!important}
+#view table.table.aligned-data-table td .amount{font-family:inherit;font-size:inherit;line-height:1.45;font-variant-numeric:tabular-nums}
 
+@media(max-width:800px){
+ .topbar:has(.guest-header){flex-wrap:nowrap!important;gap:4px!important;min-height:50px!important}
+ .topbar>.guest-header{display:contents!important}
+ .topbar .guest-header>div:first-child{flex:1 1 0!important;min-width:0!important}
+ .topbar .guest-header #add-record{font-size:0!important}
+ .topbar:has(.guest-header) .topright{flex:0 0 auto!important;margin-left:0!important;gap:3px!important}
+ .topbar .guest-feature-tabs{max-width:100%;width:fit-content;gap:1px;padding:2px}
+ .topbar .guest-feature-tabs button{font-size:10px!important;padding:5px!important;white-space:nowrap}
+ #view table.table.aligned-data-table td:last-child button{background:#eaf0fc;color:#3c61b9;border-radius:8px}
+ html[data-theme="dark"] #view table.table.aligned-data-table td:last-child button{background:#203354;color:#bfd0ff}
+}
+
+@media(min-width:801px){#view table.table.aligned-data-table .aligned-mobile-action{display:none!important}}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1805,7 +1818,7 @@ function alignFeatureRows(){
   table.classList.add('aligned-data-table');
   if(table.classList.contains('gift-sheet-table')||table.classList.contains('finance-table'))return;
   const labels=heads.map(h=>h.textContent.trim()),last=heads.length-1;
-  const actions=!!table.querySelector('tbody tr td:last-child :is(button,a)');
+  const actions=!labels[last]||/Aksi|Tindakan/.test(labels[last])||!!table.querySelector('tbody tr td:last-child :is(button,a)');
   if(!actions)return; if(!heads[last].textContent.trim())heads[last].textContent='Aksi';
   const status=labels.findIndex((v,i)=>i>0&&/Status|Konfirmasi|Kehadiran/.test(v));
   const amount=labels.findIndex((v,i)=>i>0&&/Biaya|Nominal|Komitmen|Uang|Estimasi|Waktu/.test(v));
@@ -1836,6 +1849,7 @@ function alignFeatureRows(){
 let featureRowFrame=0;
 new MutationObserver(()=>{if(featureRowFrame)return;featureRowFrame=requestAnimationFrame(()=>{featureRowFrame=0;alignFeatureRows();});}).observe(document.getElementById('view'),{childList:true,subtree:true});
 alignFeatureRows();
+
 
 
 
