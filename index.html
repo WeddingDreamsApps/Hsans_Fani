@@ -1018,6 +1018,8 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
  #view .list-pagination .button{width:28px!important;min-width:28px!important;height:34px!important;min-height:34px!important}
 }
 
+#view.dashboard-no-currency .currency{display:none!important}
+
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
 const KUA_SOURCE='https://kebumen.kemenag.go.id/mau-menikah-ini-syarat-dan-tahapan-pendaftaran-nikah-di-kua-sesuai-pma-30-tahun-2024/';
@@ -1947,6 +1949,7 @@ function timelineFilterControl(){const current=filter?['status',filter]:taskScop
 /* Display only. Original records, editors and action handlers stay authoritative. */
 function alignFeatureRows(){
  const view=document.getElementById('view');if(!view)return;
+ view.classList.toggle('dashboard-no-currency',route==='dashboard');
  view.querySelectorAll('table.table:not(.user-permission-matrix)').forEach(table=>{
   const heads=[...table.querySelectorAll('thead th')];if(heads.length<2)return;
   table.classList.add('aligned-data-table');
