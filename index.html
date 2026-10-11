@@ -1180,7 +1180,7 @@ async function openFile(key,x,fileId,downloadIt){
   // Avoid fetching/base64 decoding the entire file through the Worker first.
   if(live&&!f.previewOnly){
     const direct=driveAttachmentUrl(f,downloadIt);
-    if(direct){const link=document.createElement('a');link.href=direct;link.target='_blank';link.rel='noopener noreferrer';document.body.append(link);link.click();link.remove();return;}
+    if(direct){const link=document.createElement('a');link.href=direct;link.target=downloadIt?'_self':'_blank';link.rel='noopener noreferrer';document.body.append(link);link.click();link.remove();return;}
   }
   try{
     if(live){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});blob=new Blob([Uint8Array.from(atob(r.base64),c=>c.charCodeAt(0))],{type:r.mime});}
@@ -1927,7 +1927,7 @@ function alignFeatureRows(){
     }
     cell.querySelectorAll('button,a').forEach(control=>{
      const shortcut=control.cloneNode(true);shortcut.classList.add('aligned-mobile-action');
-     shortcut.removeAttribute('id');shortcut.addEventListener('click',event=>{event.preventDefault();control.click();});
+     shortcut.removeAttribute('id');shortcut.addEventListener('click',event=>{event.preventDefault();if(control.dataset.docFile){const record=db.admin.find(x=>x.id===control.dataset.docRecord);if(record)openFile('admin',record,control.dataset.docFile,false);}else control.click();});
      (tail.querySelector('div')||tail).prepend(shortcut);
     });
    });
