@@ -983,6 +983,12 @@ html:not([data-theme="dark"]) #view.preparation-view .prep-icons.prep-roadmap{ba
 html:not([data-theme="dark"]) #view.preparation-view .preparation-map{border-color:#dce6fa}
 html[data-theme="dark"] #view.preparation-view .preparation-map,
 html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{background:#172641!important}
+#view table.table.aligned-data-table.document-data-table :is(th,td).aligned-cell:not(:first-child){text-align:center;vertical-align:middle!important}
+#view table.table.aligned-data-table.document-data-table td:last-child .doc-actions{justify-content:center!important}
+@media(max-width:800px){
+ #view table.table.aligned-data-table.document-data-table td .aligned-mobile-details small{display:inline!important;margin:0;font-size:10px!important;line-height:1.5}
+ #view table.table.aligned-data-table.document-data-table td .aligned-mobile-details small+small:before{content:' · ';color:var(--pink)}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1163,8 +1169,19 @@ function attachmentPanel(key,x,writable){
     }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';}
   };
 }
+function driveAttachmentUrl(file,downloadIt){
+ if(!file||!/^[-\w]{10,200}$/.test(file.id||''))return null;
+ return downloadIt?'https://drive.google.com/uc?export=download&id='+encodeURIComponent(file.id):'https://drive.google.com/file/d/'+encodeURIComponent(file.id)+'/view';
+}
 async function openFile(key,x,fileId,downloadIt){
   const f=x.files.find(f=>f.id===fileId);let blob;
+  if(!f){toast('Lampiran tidak tersedia.');return;}
+  // Drive renders and downloads privately with the viewer's Google account.
+  // Avoid fetching/base64 decoding the entire file through the Worker first.
+  if(live&&!f.previewOnly){
+    const direct=driveAttachmentUrl(f,downloadIt);
+    if(direct){const link=document.createElement('a');link.href=direct;link.target='_blank';link.rel='noopener noreferrer';document.body.append(link);link.click();link.remove();return;}
+  }
   try{
     if(live){const r=await rpc('getAttachment',{collection:key,id:x.id,fileId});blob=new Blob([Uint8Array.from(atob(r.base64),c=>c.charCodeAt(0))],{type:r.mime});}
     else{blob=localFiles.get(fileId);if(!blob)throw new Error('Berkas contoh belum diunggah pada sesi ini.');}
@@ -1900,12 +1917,13 @@ function alignFeatureRows(){
    if(row.dataset.alignedRow==='true')return;
    row.dataset.alignedRow='true';const cells=[...row.children];if(cells.length!==heads.length)return;
    const primary=cells[0],tail=cells[last],details=document.createElement('div');details.className='aligned-mobile-details';
+   if(table.classList.contains('document-data-table')){const title=primary.querySelector('h3');if(title)title.textContent=title.textContent.replace(/surat pengantar nikah desa\s*\/\s*kelurahan/i,'Surat pengantar nikah desa');}
    cells.forEach((cell,i)=>{
     cell.classList.add('aligned-cell');cell.classList.toggle('aligned-secondary',!keep.includes(i));cell.style.setProperty('--row-width',(widths[keep.indexOf(i)]||0)+'%');
     if(keep.includes(i))return;
     const value=cell.textContent.trim();
     if(value&&value!=='—'&&value!=='-'&&!primary.textContent.includes(value)&&!cell.querySelector('button,a')){
-     const detail=document.createElement('small');detail.textContent=labels[i]+': '+value;details.append(detail);
+     const detail=document.createElement('small');detail.textContent=table.classList.contains('document-data-table')&&/Mempelai|Remark/.test(labels[i])?value:labels[i]+': '+value;details.append(detail);
     }
     cell.querySelectorAll('button,a').forEach(control=>{
      const shortcut=control.cloneNode(true);shortcut.classList.add('aligned-mobile-action');
