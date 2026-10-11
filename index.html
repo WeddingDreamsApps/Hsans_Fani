@@ -4482,7 +4482,9 @@ async function guestQrModal(){
 }
 const guestControlsBeforeQr=guestTabControls;
 guestTabControls=function(){guestControlsBeforeQr();if(route!=='guests')return;let button=$('guest-qr-button');if(guestTab!=='book'){button?.remove();return;}if(!button){button=document.createElement('button');button.id='guest-qr-button';button.className='doc-edit-icon';button.type='button';button.setAttribute('aria-label','QR untuk tamu datang langsung');button.title='QR Buku Tamu';button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h3v3h-3zM21 14v7h-7M12 3v3M3 12h3M12 9v6M9 12h6"/></svg>';button.onclick=guestQrModal;const searchInput=$('search'),field=searchInput?.closest('.searchbox')||searchInput?.parentElement;field?.after(button);}}
+;
 
+;
 // Read-only owner check. No password, key or user list is returned to the browser.
 (function(){
   const before=usersPage;
