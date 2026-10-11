@@ -964,12 +964,12 @@ function attachmentPanel(key,x,writable){
   if($('attachment'))$('attachment').onchange=async e=>{
     const file=e.target.files[0];if(!file)return;if(key==='budget'&&!/\.(pdf|jpe?g|png)$/i.test(file.name)){toast('Pilih PDF, JPG atau PNG untuk invoice / nota.');return;}if(file.size>5*1024*1024){$('upload-error').innerHTML='<div class="error">Berkas maksimal 5 MB.</div>';return;}
     const types={'pdf':'application/pdf','doc':'application/msword','docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png'};const mime=types[file.name.split('.').pop().toLowerCase()];if(!mime){toast('Format tidak didukung.');return;}
-    const input=e.target;input.disabled=true;const form=$('edit-form');form.querySelectorAll('button').forEach(b=>b.disabled=true);busy=true;status('Mengunggah…');
+    const input=e.target;input.disabled=true;const form=$('edit-form');form.querySelectorAll('button').forEach(b=>b.disabled=true);busy=true;status('Mengunggah…');$('upload-error').textContent='Sedang mengunggah berkas ke Drive…';
     try{
       if(live){const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(new Error('Berkas tidak terbaca.'));r.readAsDataURL(file);});const result=await rpc('uploadAttachment',{collection:key,id:x.id,version:x.version,requestId:uploadRequestId,name:file.name,mime,base64,replaceFileId:replacement});db=result.data;}
       else{if((x.files||[]).length>=10&&!replacement)throw new Error('Maksimal 10 lampiran.');const id=uuid();localFiles.set(id,file);const row=db[key].find(r=>r.id===x.id);row.files=[...(row.files||[]).filter(f=>f.id!==replacement),{id,name:file.name,mime,previewOnly:true,uploaded_at:new Date().toISOString()}];row.version++;if(key==='admin')row.available=true;}
       status(live?'Tersimpan di Drive':'Lampiran contoh');render();edit(key,db[key].find(r=>r.id===x.id));toast(live?'Berkas tersimpan di Drive.':'Berkas ditambahkan untuk pratinjau sesi ini.');
-    }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;}
+    }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';}
   };
 }
 async function openFile(key,x,fileId,downloadIt){
