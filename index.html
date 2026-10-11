@@ -977,6 +977,12 @@ html[data-theme="dark"] #view table.table.aligned-data-table .doc-edit-icon{back
  .preparation-view .prep-node .prep-node-icon{align-items:center;justify-items:center}
 }
 @media(max-width:800px){#view table.table.aligned-data-table td .aligned-mobile-details small{display:block!important;white-space:normal!important;font-size:10px!important;line-height:1.45;color:var(--muted);margin-top:3px}}
+/* One continuous blue-white surface across the entire preparation map. */
+html:not([data-theme="dark"]) #view.preparation-view .preparation-map,
+html:not([data-theme="dark"]) #view.preparation-view .prep-icons.prep-roadmap{background:#eef3ff!important}
+html:not([data-theme="dark"]) #view.preparation-view .preparation-map{border-color:#dce6fa}
+html[data-theme="dark"] #view.preparation-view .preparation-map,
+html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{background:#172641!important}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
