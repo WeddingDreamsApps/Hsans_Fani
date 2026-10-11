@@ -104,16 +104,26 @@ var WeddingCore = (function () {
   function netPaid(item){return(item.payments||[]).reduce((s,p)=>s+(p.type==='refund'?-p.amount:p.amount),0);}
   function attendance(guest){try{const rows=JSON.parse(guest.attendanceLedger||'[]');return Array.isArray(rows)?rows:[];}catch(e){return [];}}
   function preparationCost(record){const raw=(record?.source||'').match(/[#&]biaya=(\d+)(?:&|$)/)?.[1];if(raw===undefined)return null;const value=Number(raw);return Number.isSafeInteger(value)&&value>=0&&value<=1000000000000?value:null;}
+  function financeRows(db){
+    const gifts=db.gifts||[],budget=db.budget||[],result=budget.map(record=>{
+      const gift=gifts.find(item=>'linked-gifts-'+item.id===record.id);
+      return {...record,...(gift?{name:gift.name,amount:gift.amount,category:gift.type}:{}),sourceKey:gift?'gifts':'budget',sourceId:gift?gift.id:record.id,ledgerId:record.id};
+    });
+    gifts.forEach(gift=>{if(!budget.some(record=>record.id==='linked-gifts-'+gift.id))result.push({id:'linked-gifts-'+gift.id,name:gift.name,category:gift.type,amount:gift.amount||0,date:'',owner:gift.owner||'',payments:[],files:[],sourceKey:'gifts',sourceId:gift.id,ledgerId:null});});
+    (db.admin||[]).forEach(record=>{const cost=preparationCost(record);if(cost!==null)result.push({id:'preparation-'+record.id,name:record.name,category:'Administrasi',amount:cost,date:record.date||'',owner:record.owner||'',payments:[],files:[],sourceKey:'admin',sourceId:record.id,ledgerId:null});});
+    return result;
+  }
+  function financePaid(record){return record.sourceKey==='admin'?record.amount:netPaid(record);}
   function totals(db){
-    const p=db.profile[0]||{};const costs=db.budget||[];
-    const preparationPaid=(db.admin||[]).reduce((sum,record)=>sum+(preparationCost(record)||0),0);
-    const spent=costs.reduce((s,x)=>s+netPaid(x),0)+preparationPaid;
+    const p=db.profile[0]||{};const costs=financeRows(db);
+    const preparationPaid=costs.filter(record=>record.sourceKey==='admin').reduce((sum,record)=>sum+financePaid(record),0);
+    const spent=costs.reduce((s,x)=>s+financePaid(x),0);
     const fromSavings=costs.reduce((s,x)=>s+(x.payments||[]).reduce((a,p)=>a+(p.source==='Tabungan'?(p.type==='refund'?-p.amount:p.amount):0),0),0);
     const deposits=db.savings.reduce((s,x)=>s+(x.type==='Setoran'?x.amount:-x.amount),0);
     const tasks=db.tasks.filter(x=>x.status!=='Tidak berlaku');
     const visitors=(db.guests||[]).flatMap(attendance);
     const guestCash=visitors.reduce((s,x)=>s+Number(x.cash||0),0),guestGoods=visitors.filter(x=>x.goods).length;
-    return {checkedIn:visitors.length,guestCash,guestGoods,netEventCash:guestCash-spent,budget:p.budget||0,committed:costs.reduce((s,x)=>s+x.amount,0)+preparationPaid,preparationPaid,paid:spent,due:costs.reduce((s,x)=>s+Math.max(0,x.amount-netPaid(x)),0),credit:costs.reduce((s,x)=>s+Math.max(0,netPaid(x)-x.amount),0),savings:deposits-fromSavings,target:p.target||0,invites:db.guests.length,quota:db.guests.reduce((s,x)=>s+x.quota,0),attending:db.guests.reduce((s,x)=>s+x.attending,0),tasks:tasks.length,done:tasks.filter(x=>x.status==='Selesai').length};
+    return {checkedIn:visitors.length,guestCash,guestGoods,netEventCash:guestCash-spent,budget:p.budget||0,committed:costs.reduce((s,x)=>s+x.amount,0),preparationPaid,paid:spent,due:costs.reduce((s,x)=>s+Math.max(0,x.amount-financePaid(x)),0),credit:costs.reduce((s,x)=>s+Math.max(0,financePaid(x)-x.amount),0),savings:deposits-fromSavings,target:p.target||0,invites:db.guests.length,quota:db.guests.reduce((s,x)=>s+x.quota,0),attending:db.guests.reduce((s,x)=>s+x.attending,0),tasks:tasks.length,done:tasks.filter(x=>x.status==='Selesai').length};
   }
   function mutate(db,req,now){
     requireThat(req&&typeof req==='object','Permintaan tidak valid.');
@@ -173,7 +183,7 @@ var WeddingCore = (function () {
   function csv(rows){const keys=[...new Set(rows.flatMap(x=>Object.keys(x).filter(k=>!['payments','files'].includes(k))))];const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'<!-- CORE -->").replace(/"/g,'""')+'"';return '\uFEFF'+[keys,...rows.map(r=>keys.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');}
   function can(actor,key,write){if(actor?.owner)return true;if(key==='users')return false;return actor?.permissions?.[key]==='write'||(!write&&actor?.permissions?.[key]==='read');}
   function visible(db,actor){const copy=blank();for(const key of Object.keys(modules))copy[key]=can(actor,key,false)?db[key]:[];return copy;}
-  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,totals,mutate,csv,can,visible};
+  return {modules,statuses,blank,money,amount,validate,netPaid,attendance,preparationCost,financeRows,financePaid,totals,mutate,csv,can,visible};
 })();
 if(typeof module!=='undefined')module.exports=WeddingCore;
 
@@ -226,12 +236,12 @@ function dashboard(){
   const p=db.profile[0]||{},t=C.totals(db),pct=t.tasks?Math.round(t.done/t.tasks*100):0;
   const days=p.date?Math.ceil((Date.parse(p.date+'T00:00:00+07:00')-Date.parse(localToday()+'T00:00:00+07:00'))/86400000):null;
   const tasks=[...db.tasks].filter(x=>!['Selesai','Tidak berlaku'].includes(x.status)).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,4);
-  const unpaid=db.budget.filter(x=>C.netPaid(x)<x.amount).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,3);
+  const unpaid=C.financeRows(db).filter(x=>C.financePaid(x)<x.amount).sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')).slice(0,3);
   $('view').innerHTML='<div class="page-head"><div><h1>Dashboard</h1><p class="subtitle">Satu langkah lebih dekat ke hari istimewa.</p></div><button class="button" id="add-task">'+icon('plus')+'Tambah tugas</button></div>'+
   (!p.name?'<div class="incomplete"><h3>Mulai dari rencana kalian</h3><p>Isi nama, tanggal, dan anggaran untuk menyiapkan ruang pernikahan.</p><button class="button subtle" id="start-profile">Isi data mempelai</button></div>':'')+
   '<section class="hero"><div><small>MENUJU HARI BAHAGIA</small><h2>'+esc(p.name?(p.name+' & '+(p.partner||'Pasangan')):'Pernikahan kita')+'</h2><div class="hero-meta"><span>'+icon('calendar')+esc(prettyDate(p.date))+'</span><span>'+icon('pin')+esc(p.location||'Lokasi belum ditentukan')+'</span></div></div><div class="countdown"><strong>'+(days===null?'—':days<0?'✓':days)+'</strong><span>'+(days!==null&&days<0?'Hari bahagia telah tiba':'hari menuju acara')+'</span></div></section>'+
   '<div class="metrics">'+metric('Anggaran',money(t.budget),'Komitmen '+money(t.committed),'budget')+metric('Sudah dibayar',money(t.paid),'Sisa tagihan '+money(t.due),'savings')+metric('Tamu terkonfirmasi',numberFormat(t.attending)+' <span style="font-size:14px;font-weight:400;color:var(--muted)">orang</span>',numberFormat(t.invites)+' undangan · kuota '+numberFormat(t.quota),'guests')+metric('Progres persiapan',pct+'%',numberFormat(t.done)+' dari '+numberFormat(t.tasks)+' tugas selesai','tasks',pct)+'</div>'+
-  '<div class="dashboard-grid"><section class="card"><div class="card-head"><h2>Yang perlu disiapkan</h2><button class="text-button" id="all-tasks">Lihat semua</button></div>'+ (tasks.length?tasks.map(x=>'<div class="task"><button class="check" data-done="'+esc(x.id)+'" aria-label="Selesaikan '+esc(x.name)+'"></button><div class="task-info"><strong>'+esc(x.name)+'</strong><small>'+esc(x.owner||'Belum ada PIC')+' · '+esc(prettyDate(x.date))+'</small></div>'+badge(x.date&&x.date<localToday()?'Terlambat':x.priority)+'</div>').join(''):'<div class="empty"><h3>Tidak ada tugas tertunda</h3><p>Tambahkan rencana berikutnya untuk kalian kerjakan bersama.</p></div>')+'</section><section class="card"><div class="card-head"><h2>Rencana keuangan</h2><button class="text-button" id="all-budget">Detail</button></div><div class="card-body"><div class="budget-chart"><div class="donut" style="--pct:'+Math.max(0,Math.min(100,t.budget?t.paid/t.budget*100:0))+'"><span>'+Math.round(t.budget?t.paid/t.budget*100:0)+'%</span></div><div class="legend"><p>Pembayaran bersih</p><strong>'+money(t.paid)+'</strong><p>dari anggaran '+money(t.budget)+'</p></div></div><div class="line-stat"><span>Saldo tabungan</span><strong>'+money(t.savings)+'</strong></div><div class="line-stat"><span>Sisa tagihan</span><strong>'+money(t.due)+'</strong></div><div class="alert-strip">'+(t.committed>t.budget?'Komitmen melebihi anggaran sebesar '+money(t.committed-t.budget):'Ruang anggaran tersisa '+money(t.budget-t.committed))+'.</div></div></section><section class="card"><div class="card-head"><h2>Pembayaran berikutnya</h2><button class="text-button" id="next-budget">Lihat semua</button></div>'+ (unpaid.length?unpaid.map(x=>'<div class="task"><span class="metric-icon">'+icon('budget')+'</span><div class="task-info"><strong>'+esc(x.name)+'</strong><small>'+esc(prettyDate(x.date))+'</small></div><strong style="font-size:14px">'+money(x.amount-C.netPaid(x))+'</strong></div>').join(''):'<div class="empty"><p>Belum ada tagihan tertunda.</p></div>')+'</section><section class="card"><div class="card-head"><h2>Target tabungan</h2><button class="text-button" id="all-savings">Detail</button></div><div class="card-body"><div class="line-stat" style="border:0;padding-top:0"><span>Dana tersedia</span><strong>'+money(t.savings)+'</strong></div><div class="progress"><i style="width:'+Math.max(0,Math.min(100,t.target?t.savings/t.target*100:0))+'%"></i></div><p class="muted" style="font-size:14px">'+(t.target?'Masih '+money(Math.max(0,t.target-t.savings))+' menuju target '+money(t.target)+'.':'Tentukan target pada Data Mempelai.')+'</p></div></section></div><div class="quick-actions"><button id="quick-guest">'+icon('guests')+'Tambah undangan</button><button id="quick-vendor">'+icon('vendors')+'Catat vendor pilihan</button><button id="quick-rundown">'+icon('rundown')+'Susun rundown acara</button></div>';
+  '<div class="dashboard-grid"><section class="card"><div class="card-head"><h2>Yang perlu disiapkan</h2><button class="text-button" id="all-tasks">Lihat semua</button></div>'+ (tasks.length?tasks.map(x=>'<div class="task"><button class="check" data-done="'+esc(x.id)+'" aria-label="Selesaikan '+esc(x.name)+'"></button><div class="task-info"><strong>'+esc(x.name)+'</strong><small>'+esc(x.owner||'Belum ada PIC')+' · '+esc(prettyDate(x.date))+'</small></div>'+badge(x.date&&x.date<localToday()?'Terlambat':x.priority)+'</div>').join(''):'<div class="empty"><h3>Tidak ada tugas tertunda</h3><p>Tambahkan rencana berikutnya untuk kalian kerjakan bersama.</p></div>')+'</section><section class="card"><div class="card-head"><h2>Rencana keuangan</h2><button class="text-button" id="all-budget">Detail</button></div><div class="card-body"><div class="budget-chart"><div class="donut" style="--pct:'+Math.max(0,Math.min(100,t.budget?t.paid/t.budget*100:0))+'"><span>'+Math.round(t.budget?t.paid/t.budget*100:0)+'%</span></div><div class="legend"><p>Pembayaran bersih</p><strong>'+money(t.paid)+'</strong><p>dari anggaran '+money(t.budget)+'</p></div></div><div class="line-stat"><span>Saldo tabungan</span><strong>'+money(t.savings)+'</strong></div><div class="line-stat"><span>Sisa tagihan</span><strong>'+money(t.due)+'</strong></div><div class="alert-strip">'+(t.committed>t.budget?'Komitmen melebihi anggaran sebesar '+money(t.committed-t.budget):'Ruang anggaran tersisa '+money(t.budget-t.committed))+'.</div></div></section><section class="card"><div class="card-head"><h2>Pembayaran berikutnya</h2><button class="text-button" id="next-budget">Lihat semua</button></div>'+ (unpaid.length?unpaid.map(x=>'<div class="task"><span class="metric-icon">'+icon('budget')+'</span><div class="task-info"><strong>'+esc(x.name)+'</strong><small>'+esc(prettyDate(x.date))+'</small></div><strong style="font-size:14px">'+money(x.amount-C.financePaid(x))+'</strong></div>').join(''):'<div class="empty"><p>Belum ada tagihan tertunda.</p></div>')+'</section><section class="card"><div class="card-head"><h2>Target tabungan</h2><button class="text-button" id="all-savings">Detail</button></div><div class="card-body"><div class="line-stat" style="border:0;padding-top:0"><span>Dana tersedia</span><strong>'+money(t.savings)+'</strong></div><div class="progress"><i style="width:'+Math.max(0,Math.min(100,t.target?t.savings/t.target*100:0))+'%"></i></div><p class="muted" style="font-size:14px">'+(t.target?'Masih '+money(Math.max(0,t.target-t.savings))+' menuju target '+money(t.target)+'.':'Tentukan target pada Data Mempelai.')+'</p></div></section></div><div class="quick-actions"><button id="quick-guest">'+icon('guests')+'Tambah undangan</button><button id="quick-vendor">'+icon('vendors')+'Catat vendor pilihan</button><button id="quick-rundown">'+icon('rundown')+'Susun rundown acara</button></div>';
   $('add-task').onclick=()=>edit('tasks');if($('start-profile'))$('start-profile').onclick=()=>go('profile');
   for(const [id,key]of Object.entries({'all-tasks':'tasks','all-budget':'budget','next-budget':'budget','all-savings':'savings'}))$(id).onclick=()=>go(key);
   for(const [id,key]of Object.entries({'quick-guest':'guests','quick-vendor':'vendors','quick-rundown':'rundown'}))$(id).onclick=()=>edit(key);
@@ -733,6 +743,11 @@ html[data-theme="dark"] .prep-node{background:#172641;color:#d5e1f6}html[data-th
 #edit-form[data-prep-editor] .new-budget-proof input[type=file],#edit-form[data-prep-editor] .new-budget-proof small{display:none}
 #edit-form[data-prep-editor] .new-budget-proof .gift-upload-button{display:flex;width:100%;height:42px;min-height:42px;margin-top:0;border:1px solid var(--line);background:var(--white);color:var(--ink);box-sizing:border-box;font-size:13px;cursor:pointer}
 @media(max-width:800px){.prep-form-guide{font-size:13px}#edit-form[data-prep-editor] .new-budget-proof .gift-upload-button{height:44px;min-height:44px;margin-top:0}}
+
+.finance-source{font-size:11px;color:var(--pink);background:var(--tint);padding:4px 7px;border-radius:6px;white-space:nowrap}
+.finance-actions{display:flex;justify-content:flex-end;gap:4px}.finance-file-list{display:grid;gap:8px}.finance-gift-payments{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding:10px;border-radius:9px;background:var(--tint);font-size:12px;color:var(--ink)}.finance-gift-payments .button{font-size:12px;padding:6px 9px;min-height:34px}
+#view .finance-table :is(th,td){font-variant-numeric:tabular-nums}#view .finance-table :is(th,td):nth-child(1){width:26%!important}#view .finance-table :is(th,td):nth-child(2){width:14%!important}#view .finance-table :is(th,td):nth-child(3),#view .finance-table :is(th,td):nth-child(4){width:16%!important}#view .finance-table :is(th,td):nth-child(5){width:13%!important}#view .finance-table :is(th,td):nth-child(6){width:5%!important}#view .finance-table :is(th,td):nth-child(7){width:10%!important}
+@media(max-width:800px){#view .finance-table :is(th,td):nth-child(2),#view .finance-table :is(th,td):nth-child(5){display:none!important}#view .finance-table :is(th,td):nth-child(1){display:table-cell!important;width:32%!important}#view .finance-table :is(th,td):nth-child(3),#view .finance-table :is(th,td):nth-child(4){display:table-cell!important;width:22%!important}#view .finance-table :is(th,td):nth-child(6){display:table-cell!important;width:8%!important}#view .finance-table :is(th,td):nth-child(7){display:table-cell!important;width:16%!important}.finance-gift-payments{flex-wrap:wrap}}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1446,6 +1461,53 @@ edit=function(key,record){
  const saveButton=footer.querySelector('[type="submit"]');if(saveButton)saveButton.innerHTML=icon('check')+'Simpan';
  accountingInputs();
  const submit=form.onsubmit;form.onsubmit=async event=>{try{if(!nameInput.value.trim())throw new Error('Pilih atau isi nama persyaratan.');if(prepDuplicate(db.admin,nameInput.value,$('field-owner').value,record?.id))throw new Error('Persyaratan ini sudah ada untuk mempelai tersebut. Edit data yang sudah ada.');source.value=prepSourceWithCost(source.value,$('prep-location').value,$('prep-cost').value);}catch(error){event.preventDefault();$('form-error').textContent=error.message;return;}await submit(event);};
+};
+
+ICONS.link='M14 3h7v7 M21 3l-9 9 M10 5H3v16h16v-7';
+/* Unified financial view projects source records without duplicating their storage. */
+['Transportasi','Akomodasi','Konsumsi'].forEach(category=>{if(!choices.category.includes(category))choices.category.push(category);});
+function financeSource(row){return row.sourceKey==='gifts'?row.category:row.sourceKey==='admin'?'Peta Persiapan':'Manual';}
+function financeOrigin(row){return db[row.sourceKey]?.find(record=>record.id===row.sourceId);}
+function financeFiles(row){const origin=financeOrigin(row),ledger=db.budget.find(record=>record.id===row.ledgerId);return [...(origin?.files||[]).map(file=>({file,key:row.sourceKey,record:origin})),...(row.sourceKey!=='budget'?(ledger?.files||[]).map(file=>({file,key:'budget',record:ledger})):[])];}
+function financeOpenSource(row){const origin=financeOrigin(row);if(origin){go(row.sourceKey);edit(row.sourceKey,origin);}}
+function financeViewFiles(row){const files=financeFiles(row);if(!files.length){financeOpenSource(row);return;}if(files.length===1){const item=files[0];openFile(item.key,item.record,item.file.id,false);return;}openModal('Lampiran · '+row.name,'<div class="finance-file-list">'+files.map((item,index)=>'<button type="button" class="button secondary" data-finance-file="'+index+'">'+icon('attach')+esc(item.file.name)+'</button>').join('')+'</div>');document.querySelectorAll('[data-finance-file]').forEach(button=>button.onclick=()=>{const item=files[Number(button.dataset.financeFile)];openFile(item.key,item.record,item.file.id,false);});}
+async function financePayment(row){
+ if(!C.can(principal,'budget',true))return;
+ if(row.sourceKey==='admin'){financeOpenSource(row);return;}
+ if(row.sourceKey==='budget'){payment(financeOrigin(row));return;}
+ let ledger=db.budget.find(record=>record.id===row.id);
+ if(!ledger||ledger.amount!==row.amount||ledger.name!==row.name||ledger.category!==row.category){
+  await save({collection:'budget',id:row.id,version:ledger?.version||0,action:'save',requestId:uuid(),data:{name:row.name,category:row.category,amount:row.amount,date:ledger?.date||'',owner:row.owner||'',notes:ledger?.notes||'Terhubung dengan '+financeSource(row)+'.'}});
+  ledger=db.budget.find(record=>record.id===row.id);
+ }
+ if(ledger)payment(ledger);
+}
+function drawFinanceRows(){
+ const rows=C.financeRows(db).filter(row=>!search||[row.name,row.category,financeSource(row)].join(' ').toLowerCase().includes(search.toLowerCase()));
+ $('records').innerHTML='<div class="table-wrap"><table class="table standard-data-table finance-table"><thead><tr>'+['Item biaya','Sumber','Rencana biaya','Dibayar','Sisa','Lampiran',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const paid=C.financePaid(row),files=financeFiles(row),status=paid===0&&row.amount>0?'Belum dibayar':paid<row.amount?'DP / sebagian':'Lunas';return '<tr data-finance-row="'+index+'"><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong><small>'+esc(row.category)+(row.date?' · '+esc(prettyDate(row.date)):'')+'</small></td><td><span class="finance-source">'+esc(financeSource(row))+'</span></td><td>'+money(row.amount)+'</td><td>'+money(paid)+'<small>'+status+'</small></td><td>'+money(Math.max(0,row.amount-paid))+'</td><td><button class="doc-edit-icon" data-finance-files="'+index+'" aria-label="'+(files.length?'Lihat lampiran ':'Tambah lampiran ')+esc(row.name)+'" title="'+files.length+' lampiran">'+icon('attach')+'</button>'+(files.length?'<small>'+numberFormat(files.length)+'</small>':'')+'</td><td><div class="finance-actions">'+(row.sourceKey!=='admin'&&C.can(principal,'budget',true)?'<button class="doc-edit-icon" data-finance-pay="'+index+'" aria-label="Catat pembayaran '+esc(row.name)+'" title="Catat pembayaran">'+icon('budget')+'</button>':'')+'<button class="doc-edit-icon" data-finance-edit="'+index+'" aria-label="Edit '+esc(row.name)+'" title="'+(row.sourceKey==='budget'?'Edit biaya':'Buka data asal')+'">'+icon(row.sourceKey==='budget'?'edit':'link')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+(!rows.length?'<div class="empty"><p>Belum ada biaya yang sesuai.</p></div>':'');
+ document.querySelectorAll('[data-finance-edit]').forEach(button=>button.onclick=()=>financeOpenSource(rows[Number(button.dataset.financeEdit)]));
+ document.querySelectorAll('[data-finance-files]').forEach(button=>button.onclick=()=>financeViewFiles(rows[Number(button.dataset.financeFiles)]));
+ document.querySelectorAll('[data-finance-pay]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{await financePayment(rows[Number(button.dataset.financePay)]);}catch(error){toast(error.message);}finally{button.disabled=false;}});
+ $('export').onclick=()=>download('keuangan-terintegrasi.csv',C.csv(rows.map(row=>({Nama:row.name,Kategori:row.category,Sumber:financeSource(row),'Rencana biaya':row.amount,Dibayar:C.financePaid(row),Sisa:Math.max(0,row.amount-C.financePaid(row)),Tanggal:row.date}))), 'text/csv;charset=utf-8');
+ paginate();polishTables();
+}
+const drawRowsBeforeFinance=drawRows;drawRows=function(){if(route==='budget'){drawFinanceRows();return;}drawRowsBeforeFinance();};
+const dashboardBeforeFinance=dashboardReception;dashboardReception=function(){
+ dashboardBeforeFinance();if(route!=='dashboard'||!principal.owner||!ready)return;const section=$('view').querySelector('.reception-dashboard'),list=section?.querySelector('#expense-list');if(!list)return;
+ const rows=C.financeRows(db),expenses=rows.filter(row=>C.financePaid(row)>0);
+ list.innerHTML=expenses.map((row,index)=>'<div class="expense-row" data-row-id="'+esc(row.id)+'"><div><strong>'+esc(row.name)+'</strong><small>'+esc(financeSource(row))+'</small></div><div>'+money(C.financePaid(row))+'</div><button class="text-button" data-finance-expense="'+index+'">Detail</button></div>').join('')||'<p class="subtitle empty">Belum ada pengeluaran tercatat.</p>';
+ list.querySelectorAll('[data-finance-expense]').forEach(button=>button.onclick=()=>financeOpenSource(expenses[Number(button.dataset.financeExpense)]));
+ section.querySelector('.card-head .subtitle').textContent='Pembayaran dan biaya persiapan terintegrasi · penerimaan tamu hadir';
+ const totalFiles=rows.reduce((sum,row)=>sum+financeFiles(row).length,0);section.querySelector('.line-stat strong').textContent=numberFormat(totalFiles)+' berkas';paginate();
+};
+const editBeforeFinance=edit;edit=function(key,record){
+ editBeforeFinance(key,record);const form=$('edit-form');if(!form)return;
+ if(key==='budget'){form.dataset.giftEditor='true';$('modal-body').querySelector(':scope>.subtitle')?.remove();}
+ if(key==='gifts'&&record&&C.can(principal,'budget',false)){
+  const row=C.financeRows(db).find(row=>row.sourceKey==='gifts'&&row.sourceId===record.id);if(!row)return;
+  const panel=document.createElement('div');panel.className='finance-gift-payments';panel.innerHTML='<span>Pembayaran '+money(C.financePaid(row))+' · Sisa '+money(Math.max(0,row.amount-C.financePaid(row)))+'</span>'+(C.can(principal,'budget',true)?'<button type="button" class="button secondary">'+icon('budget')+'Catat pembayaran</button>':'');
+  form.querySelector('.modal-foot').before(panel);const button=panel.querySelector('button');if(button)button.onclick=async()=>{button.disabled=true;try{await financePayment(row);}catch(error){toast(error.message);button.disabled=false;}};
+ }
 };
 
 reload();
