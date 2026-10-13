@@ -1345,6 +1345,13 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
  .modal:has([data-budget-editor]) .modal-body{padding:12px 14px!important}
  .modal:has([data-budget-editor]) .modal-head h2{font-size:16px!important}
 }
+.finance-workspace>.metrics :is(.accounting,.amount){font-family:inherit!important;font-style:normal!important;font-variant-numeric:tabular-nums;letter-spacing:0!important;line-height:1.4!important}
+.modal .budget-upload-button{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--tint);color:var(--pink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-height:34px;cursor:pointer;width:fit-content;font-size:12px}
+.modal .budget-upload-button svg{width:16px;height:16px}
+.modal:has([data-budget-editor]) :is(#attachment,#new-budget-file){position:absolute;width:1px;height:1px;padding:0;opacity:0;overflow:hidden;clip-path:inset(50%)}
+.modal:has([data-budget-editor]) .upload-area{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.modal:has([data-budget-editor]) .upload-area .subtitle{flex:1;margin:0}
+.modal:has([data-budget-editor]) #upload-error{flex-basis:100%}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -2144,6 +2151,8 @@ const editBeforeFinance=edit;edit=function(key,record){
   form.querySelector('#field-notes')?.closest('.field')?.classList.remove('full');
   const paidLabel=form.querySelector('.paid-now');if(paidLabel){const checkbox=paidLabel.querySelector('input');paidLabel.replaceChildren(checkbox,document.createTextNode('Sudah dibayar'));}
   const proof=form.querySelector('.new-budget-proof');if(proof){proof.querySelector('small')?.remove();proof.querySelector('[for="new-budget-file"]').textContent='Lampiran · opsional';}
+  const upload=$('attachments')?.querySelector('label[for="attachment"]')||form.querySelector('label[for="new-budget-file"]');
+  if(upload){upload.classList.add('budget-upload-button');upload.innerHTML=icon('attach')+'<span>Lampiran</span>';upload.setAttribute('role','button');upload.tabIndex=0;upload.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$(upload.htmlFor).click();}};}
   const history=$('modal-body').querySelector('.history');if(history){const details=document.createElement('details');details.className='budget-history';const title=document.createElement('summary');title.textContent='Riwayat pembayaran';history.querySelector('h3')?.remove();details.append(title,history);form.after(details);}
  }
 
