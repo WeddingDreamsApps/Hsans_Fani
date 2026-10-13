@@ -1284,6 +1284,12 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 #view table.table.compact-guestbook-table :is(th,td){padding-inline:3px!important;font-size:11px!important}
 #view table.table.compact-guestbook-table .guestbook-gift-line{justify-content:center;font-size:11px}
 }
+#view table.table.compact-guestbook-table :is(th,td){overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+#view table.table.compact-guestbook-table th{font-size:11px!important}
+@media(max-width:800px){
+#view table.table.compact-guestbook-table th{font-size:10px!important}
+#view table.table.compact-guestbook-table :is(th,td):nth-child(3){font-size:11px!important;overflow:hidden!important}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
