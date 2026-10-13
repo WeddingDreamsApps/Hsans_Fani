@@ -248,7 +248,7 @@ function rpc(name,payload){return new Promise((resolve,reject)=>google.script.ru
 function toast(msg){clearTimeout(toastTimer);$('toast').textContent=msg;$('toast').hidden=false;toastTimer=setTimeout(()=>$('toast').hidden=true,4500);}
 function status(text){$('save-state').innerHTML=icon('check')+esc(text);}
 async function reload(){if(busy)return;status('Memuat…');try{if(live){const r=await rpc('loadData');db=r.data;email=r.email;principal=r.actor;status((window.WEDDING_CONFIG?.mode==='cloudflare-d1'?'Tersimpan di D1':'Tersimpan di Sheets'));}else{db=demo();status('Data contoh');}ready=true;loadFailed=false;render();}catch(e){ready=false;loadFailed=true;status('Gagal memuat');render();$('view').innerHTML='<div class="error">'+esc(e.message)+'</div><button class="button" id="retry-load">Coba lagi</button>';$('retry-load').onclick=reload;}}
-async function save(request){if(busy)throw new Error('Tunggu proses sebelumnya selesai.');busy=true;status('Menyimpan…');try{let next;if(live){const result=await rpc('changeData',request);next=result.data;}else{next=JSON.parse(JSON.stringify(db));C.mutate(next,request,new Date().toISOString());}db=next;status(live?(window.WEDDING_CONFIG?.mode==='cloudflare-d1'?'Tersimpan di D1':'Tersimpan di Sheets'):'Perubahan contoh');render();toast(live?'Perubahan tersimpan.':'Pratinjau diperbarui. Tidak disimpan ke Google.');return true;}catch(e){status('Gagal disimpan');throw e;}finally{busy=false;}}
+async function save(request){if(busy)throw new Error('Tunggu proses sebelumnya selesai.');busy=true;status('Menyimpan…');try{let next;if(live){const result=await rpc('changeData',request);next=result.data;}else{next=JSON.parse(JSON.stringify(db));C.mutate(next,request,new Date().toISOString());}db=next;status(live?(window.WEDDING_CONFIG?.mode==='cloudflare-d1'?'Tersimpan di D1':'Tersimpan di Sheets'):'Perubahan contoh');render();toast(live?(request.action==='delete'?'Data berhasil dihapus.':'Simpan berhasil.'):'Pratinjau diperbarui.');return true;}catch(e){status('Gagal disimpan');throw e;}finally{busy=false;}}
 function go(key){route=key;filter='';search='';$('sidebar').classList.remove('open');$('shade').classList.remove('open');render();}
 function badge(s){return '<span class="badge '+(['Selesai','Hadir','Dipilih','Final','Diserahkan'].includes(s)?'green':['Terhambat','Perlu perbaikan'].includes(s)?'amber':['Berlangsung','Dikemas'].includes(s)?'pink':'')+'">'+esc(s)+'</span>';}
 function render(){
@@ -1301,6 +1301,50 @@ html[data-theme="dark"] #view.preparation-view .prep-icons.prep-roadmap{backgrou
 #view table.table.compact-guestbook-table :is(th,td):nth-child(7){width:15%!important}
 #view .compact-guestbook-table .guestbook-row-actions .doc-edit-icon{width:22px!important;min-width:22px!important;height:26px!important;padding:4px!important}
 }
+/* Compact finance forms and aligned reading columns. */
+#view table.table.aligned-data-table.finance-table :is(th,td){vertical-align:middle!important}
+#view table.table.aligned-data-table.finance-table :is(th,td):nth-child(3){text-align:center!important}
+#view table.table.aligned-data-table.finance-table :is(th,td):nth-child(4){text-align:right!important;white-space:nowrap!important;font-variant-numeric:tabular-nums;letter-spacing:0!important}
+#view table.table.aligned-data-table.finance-table td:nth-child(4) small{white-space:nowrap;line-height:1.2;margin-top:4px}
+#view .finance-owner{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:1.4}
+.modal:has(#edit-form[data-budget-editor]){width:min(580px,calc(100vw - 20px))}
+.modal #edit-form[data-budget-editor] .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+.modal #edit-form[data-budget-editor] .field{min-width:0;gap:4px!important;margin:0!important;grid-column:auto!important}
+.modal #edit-form[data-budget-editor] label{font-size:12px!important;line-height:1.3}
+.modal #edit-form[data-budget-editor] :is(input:not([type=checkbox]),select,textarea){width:100%;min-width:0;min-height:38px!important;padding:8px 9px!important;font-size:14px!important;border-radius:8px;text-align:left!important}
+.modal #edit-form[data-budget-editor] textarea{height:38px!important;min-height:38px!important;resize:vertical}
+.modal #edit-form[data-budget-editor] .new-budget-proof{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px 0 0;margin:0;border:0}
+.modal #edit-form[data-budget-editor] .paid-now{grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:0;margin:0}
+.modal #edit-form[data-budget-editor] .paid-now input{width:16px;min-height:16px;height:16px;margin:0}
+.modal #edit-form[data-budget-editor] .modal-foot{margin-top:12px!important;gap:6px!important;align-items:center}
+.modal #edit-form[data-budget-editor] .modal-foot :is(.card-buttons,.form-actions){display:flex;gap:5px;margin:0;padding:0}
+.modal #edit-form[data-budget-editor] .modal-foot .button{min-height:36px!important;padding:7px 9px!important;font-size:12px!important;white-space:nowrap}
+.modal .budget-history{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:12px}
+.modal .budget-history summary{cursor:pointer;color:var(--pink);font-weight:600}
+.modal .budget-history .history{margin-top:8px;padding:0;border:0}
+.modal:has([data-budget-editor]) .attachments{padding-top:10px;margin-top:12px}
+.modal:has([data-budget-editor]) .attachments h3{font-size:13px;margin-bottom:6px}
+.modal:has([data-budget-editor]) .file-row{padding:7px 0;gap:5px;min-width:0}
+.modal:has([data-budget-editor]) .file-row small{display:none}
+.modal:has([data-budget-editor]) .file-row strong{font-size:12px;line-height:1.3}
+.modal:has([data-budget-editor]) .file-actions{gap:4px;flex-wrap:wrap}
+.modal:has([data-budget-editor]) .file-actions .button{min-height:30px;padding:5px 7px;font-size:11px}
+.modal:has([data-budget-editor]) .upload-area{padding:8px;margin-top:6px}
+.modal:has([data-budget-editor]) .upload-area .subtitle{font-size:11px;margin:3px 0}
+.file-upload-status{display:flex;align-items:center;gap:8px;padding:10px 0;color:var(--pink);font-size:12px}
+.file-upload-spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--pink);border-radius:50%;animation:file-upload-spin .8s linear infinite;flex-shrink:0}
+@keyframes file-upload-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.file-upload-spinner{animation-duration:2s}}
+@media(max-width:800px){
+ #view table.table.aligned-data-table.finance-table :is(th,td):nth-child(1){width:32%!important}
+ #view table.table.aligned-data-table.finance-table :is(th,td):nth-child(3){width:21%!important}
+ #view table.table.aligned-data-table.finance-table :is(th,td):nth-child(4){width:23%!important;padding-right:6px!important}
+ #view table.table.aligned-data-table.finance-table :is(th,td):nth-child(7){width:24%!important}
+ #view table.table.aligned-data-table.finance-table th:nth-child(3){font-size:9px!important;letter-spacing:0;white-space:normal!important;line-height:1.3}
+ .modal:has([data-budget-editor]) .modal-head{padding:12px 14px!important}
+ .modal:has([data-budget-editor]) .modal-body{padding:12px 14px!important}
+ .modal:has([data-budget-editor]) .modal-head h2{font-size:16px!important}
+}
 
 </style><script>
 /* Feature expansion v0.2. Preview remains session-only; live access is checked server-side. */
@@ -1473,12 +1517,12 @@ function attachmentPanel(key,x,writable){
   if($('attachment'))$('attachment').onchange=async e=>{
     const file=e.target.files[0];if(!file)return;if(key==='budget'&&!/\.(pdf|jpe?g|png)$/i.test(file.name)){toast('Pilih PDF, JPG atau PNG untuk invoice / nota.');return;}if(file.size>5*1024*1024){$('upload-error').innerHTML='<div class="error">Berkas maksimal 5 MB.</div>';return;}
     const types={'pdf':'application/pdf','doc':'application/msword','docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','jpg':'image/jpeg','jpeg':'image/jpeg','png':'image/png'};const mime=types[file.name.split('.').pop().toLowerCase()];if(!mime){toast('Format tidak didukung.');return;}
-    const input=e.target;input.disabled=true;const form=$('edit-form');form.querySelectorAll('button').forEach(b=>b.disabled=true);busy=true;status('Mengunggah…');$('upload-error').textContent='Sedang mengunggah berkas ke Drive…';
+    const input=e.target;input.disabled=true;const form=$('edit-form');form.querySelectorAll('button').forEach(b=>b.disabled=true);busy=true;status('Mengunggah…');$('upload-error').innerHTML='<div class="file-upload-status" role="status" aria-live="polite"><span class="file-upload-spinner" aria-hidden="true"></span><span>File sedang diunggah…</span></div>';form.setAttribute('aria-busy','true');
     try{
       if(live){const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(new Error('Berkas tidak terbaca.'));r.readAsDataURL(file);});const result=await rpc('uploadAttachment',{collection:key,id:x.id,version:x.version,requestId:uploadRequestId,name:file.name,mime,base64,replaceFileId:replacement});db=result.data;}
       else{if((x.files||[]).length>=10&&!replacement)throw new Error('Maksimal 10 lampiran.');const id=uuid();localFiles.set(id,file);const row=db[key].find(r=>r.id===x.id);row.files=[...(row.files||[]).filter(f=>f.id!==replacement),{id,name:file.name,mime,previewOnly:true,uploaded_at:new Date().toISOString()}];row.version++;if(key==='admin')row.available=true;}
-      status(live?'Tersimpan di Drive':'Lampiran contoh');render();edit(key,db[key].find(r=>r.id===x.id));toast(live?'Berkas tersimpan di Drive.':'Berkas ditambahkan untuk pratinjau sesi ini.');
-    }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';}
+      status(live?'Tersimpan di Drive':'Lampiran contoh');render();edit(key,db[key].find(r=>r.id===x.id));toast(live?'Lampiran berhasil disimpan.':'Lampiran ditambahkan ke pratinjau.');
+    }catch(err){$('upload-error').innerHTML='<div class="error">'+esc(err.message)+'\nMuat ulang untuk memeriksa hasil sebelum mengganti berkas lain.</div>';input.disabled=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);status('Upload belum terkonfirmasi');}finally{busy=false;input.value='';form.removeAttribute('aria-busy');}
   };
 }
 let attachmentViewSequence=0,attachmentPdfLoader=null;
@@ -2073,7 +2117,7 @@ async function financePayment(row){
 }
 function drawFinanceRows(){
  const rows=C.paidFinanceRows(db).filter(row=>!search||[row.name,row.category,financeSource(row)].join(' ').toLowerCase().includes(search.toLowerCase()));
- $('records').innerHTML='<div class="table-wrap"><table class="table standard-data-table finance-table"><thead><tr>'+['Item biaya','Sumber','Rencana','Dibayar','Sisa','Lampiran',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const paid=C.financePaid(row),files=financeFiles(row),status=paid===0&&row.amount>0?'Belum dibayar':paid<row.amount?'DP / sebagian':'Lunas';return '<tr data-finance-row="'+index+'"><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong><small>'+esc(row.category)+(row.date?' · '+esc(prettyDate(row.date)):'')+'</small></td><td><span class="finance-source">'+esc(financeSource(row))+'</span></td><td>'+(row.amount?numberFormat(row.amount):'—')+'</td><td>'+(paid?numberFormat(paid):'—')+'<small>'+status+'</small></td><td>'+(row.amount>paid?numberFormat(row.amount-paid):'—')+'</td><td><button class="doc-edit-icon" data-finance-files="'+index+'" aria-label="'+(files.length?'Lihat lampiran ':'Tambah lampiran ')+esc(row.name)+'" title="'+files.length+' lampiran">'+icon('attach')+'</button>'+(files.length?'<small>'+numberFormat(files.length)+'</small>':'')+'</td><td><div class="finance-actions">'+(row.sourceKey!=='admin'&&C.can(principal,'budget',true)?'<button class="doc-edit-icon" data-finance-pay="'+index+'" aria-label="Catat pembayaran '+esc(row.name)+'" title="Catat pembayaran">'+icon('budget')+'</button>':'')+'<button class="doc-edit-icon" data-finance-edit="'+index+'" aria-label="Edit '+esc(row.name)+'" title="'+(row.sourceKey==='budget'?'Edit biaya':'Buka data asal')+'">'+icon(row.sourceKey==='budget'?'edit':'link')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+(!rows.length?'<div class="empty"><p>Belum ada pengeluaran yang sudah dibayar.</p></div>':'');
+ $('records').innerHTML='<div class="table-wrap"><table class="table standard-data-table finance-table"><thead><tr>'+['Item biaya','Sumber','Penanggung jawab','Dibayar','Sisa','Lampiran',''].map(label=>'<th>'+label+'</th>').join('')+'</tr></thead><tbody>'+rows.map((row,index)=>{const paid=C.financePaid(row),files=financeFiles(row),status=paid===0&&row.amount>0?'Belum dibayar':paid<row.amount?'DP / sebagian':'Lunas';return '<tr data-finance-row="'+index+'"><td title="'+esc(row.name)+'"><strong>'+esc(row.name)+'</strong><small>'+esc(row.category)+(row.date?' · '+esc(prettyDate(row.date)):'')+'</small></td><td><span class="finance-source">'+esc(financeSource(row))+'</span></td><td title="'+esc(row.owner||'Belum ditentukan')+'"><span class="finance-owner">'+esc(row.owner||'—')+'</span></td><td>'+(paid?numberFormat(paid):'—')+'<small>'+status+'</small></td><td>'+(row.amount>paid?numberFormat(row.amount-paid):'—')+'</td><td><button class="doc-edit-icon" data-finance-files="'+index+'" aria-label="'+(files.length?'Lihat lampiran ':'Tambah lampiran ')+esc(row.name)+'" title="'+files.length+' lampiran">'+icon('attach')+'</button>'+(files.length?'<small>'+numberFormat(files.length)+'</small>':'')+'</td><td><div class="finance-actions">'+(row.sourceKey!=='admin'&&C.can(principal,'budget',true)?'<button class="doc-edit-icon" data-finance-pay="'+index+'" aria-label="Catat pembayaran '+esc(row.name)+'" title="Catat pembayaran">'+icon('budget')+'</button>':'')+'<button class="doc-edit-icon" data-finance-edit="'+index+'" aria-label="Edit '+esc(row.name)+'" title="'+(row.sourceKey==='budget'?'Edit biaya':'Buka data asal')+'">'+icon(row.sourceKey==='budget'?'edit':'link')+'</button></div></td></tr>';}).join('')+'</tbody></table></div>'+(!rows.length?'<div class="empty"><p>Belum ada pengeluaran yang sudah dibayar.</p></div>':'');
  document.querySelectorAll('[data-finance-row]').forEach(tr=>{const row=rows[Number(tr.dataset.financeRow)],detail=document.createElement('small');detail.className='finance-mobile-detail';detail.textContent=financeSource(row)+' · Sisa '+numberFormat(Math.max(0,row.amount-C.financePaid(row)));const metadata=document.createElement('small');metadata.className='finance-mobile-metadata';metadata.textContent=row.category+(row.date?' · '+row.date.slice(2).split('-').reverse().join('/'):'');tr.firstElementChild.append(metadata,detail);const file=tr.querySelector('[data-finance-files]')?.cloneNode(true);if(file){file.classList.add('finance-mobile-file');tr.querySelector('.finance-actions')?.prepend(file);}});
  const actionHeading=$('records').querySelector('.finance-table thead th:last-child');if(actionHeading)actionHeading.textContent='Aksi';
  document.querySelectorAll('[data-finance-edit]').forEach(button=>button.onclick=()=>financeOpenSource(rows[Number(button.dataset.financeEdit)]));
@@ -2093,7 +2137,16 @@ const dashboardBeforeFinance=dashboardReception;dashboardReception=function(){
 };
 const editBeforeFinance=edit;edit=function(key,record){
  editBeforeFinance(key,record);const form=$('edit-form');if(!form)return;
- if(key==='budget'){form.dataset.giftEditor='true';$('modal-body').querySelector(':scope>.subtitle')?.remove();}
+ if(key==='budget'){
+  form.dataset.giftEditor='true';form.dataset.budgetEditor='true';$('modal-body').querySelector(':scope>.subtitle')?.remove();
+  const labels={name:'Nama biaya',amount:'Nominal',owner:'Penanggung jawab',notes:'Catatan · opsional'};
+  Object.entries(labels).forEach(([field,label])=>{const el=form.querySelector('label[for="field-'+field+'"]');if(el)el.textContent=label;});
+  form.querySelector('#field-notes')?.closest('.field')?.classList.remove('full');
+  const paidLabel=form.querySelector('.paid-now');if(paidLabel){const checkbox=paidLabel.querySelector('input');paidLabel.replaceChildren(checkbox,document.createTextNode('Sudah dibayar'));}
+  const proof=form.querySelector('.new-budget-proof');if(proof){proof.querySelector('small')?.remove();proof.querySelector('[for="new-budget-file"]').textContent='Lampiran · opsional';}
+  const history=$('modal-body').querySelector('.history');if(history){const details=document.createElement('details');details.className='budget-history';const title=document.createElement('summary');title.textContent='Riwayat pembayaran';history.querySelector('h3')?.remove();details.append(title,history);form.after(details);}
+ }
+
  if(key==='gifts'&&record&&C.can(principal,'budget',false)){
   const row=C.financeRows(db).find(row=>row.sourceKey==='gifts'&&row.sourceId===record.id);if(!row)return;
   const panel=document.createElement('div');panel.className='finance-gift-payments';panel.innerHTML='<span>Pembayaran '+money(C.financePaid(row))+' · Sisa '+money(Math.max(0,row.amount-C.financePaid(row)))+'</span>'+(C.can(principal,'budget',true)?'<button type="button" class="button secondary">'+icon('budget')+'Catat pembayaran</button>':'');
