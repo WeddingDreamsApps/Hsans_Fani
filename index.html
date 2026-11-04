@@ -1775,6 +1775,14 @@ const gatewayConfig=window.WEDDING_CONFIG||{mode:'preview'};
 const usingSupabaseGateway=['supabase-gateway','cloudflare-d1'].includes(gatewayConfig.mode)&&!live;
 let gatewaySession=null,gatewayRefresh=null;
 const gatewaySessionKey='siapnikah-session:'+gatewayConfig.supabaseUrl;
+try {
+ const previousSessionKey='siapnikah-session:https://bcqszjdvfswmvesknnks.supabase.co';
+ if(gatewayConfig.supabaseUrl==='https://kwmidvzvpdtyyqsmuedu.supabase.co'&&!sessionStorage.getItem(gatewaySessionKey)){
+ const previousSession=sessionStorage.getItem(previousSessionKey);
+ if(previousSession){sessionStorage.setItem(gatewaySessionKey,previousSession);sessionStorage.removeItem(previousSessionKey);}
+ }
+}catch{}
+
 function validateGatewayConfig(){
   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(gatewayConfig.supabaseUrl||''))throw new Error('URL project Supabase belum diisi dengan benar.');
   const key=gatewayConfig.supabasePublishableKey||'';
@@ -4708,7 +4716,7 @@ alignFeatureRows();
 const weddingService='https://kwmidvzvpdtyyqsmuedu.supabase.co', weddingPublicKey='sb_publishable_j65Fhxov54gRqnM-779r9w_e2prooAk';
 let weddingData={invitations:[],photos:[],media:{}};
 async function weddingManage(action='list',payload={}){
- const access=await gatewayToken();
+ const access=await gatewayAccessToken();
  const response=await fetch(weddingService+'/rest/v1/rpc/sj_manage',{method:'POST',headers:{apikey:weddingPublicKey,Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({p_action:action,p_payload:payload}),signal:AbortSignal.timeout(20000)});
  const data=await response.json();if(!response.ok)throw Error(data.message||'Pengelolaan undangan belum tersedia.');weddingData=data;return data;
 }
@@ -4750,7 +4758,7 @@ async function weddingPanel(){
  const types={background_video:['video/mp4'],music_url:['audio/mpeg'],gallery:['image/jpeg','image/png','image/webp']};
  if(!types[kind].includes(file.type)||file.size>25000000){toast('Pilih jenis file yang sesuai, maksimal 25 MB.');return;}
  e.target.disabled=true;try{const ext={ 'video/mp4':'mp4','audio/mpeg':'mp3','image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];const path='media-'+uuid()+'.'+ext;
- const response=await fetch(weddingService+'/storage/v1/object/wedding-media/'+path,{method:'POST',headers:{apikey:weddingPublicKey,Authorization:'Bearer '+await gatewayToken(),'Content-Type':file.type},body:file,signal:AbortSignal.timeout(120000)});
+ const response=await fetch(weddingService+'/storage/v1/object/wedding-media/'+path,{method:'POST',headers:{apikey:weddingPublicKey,Authorization:'Bearer '+await gatewayAccessToken(),'Content-Type':file.type},body:file,signal:AbortSignal.timeout(120000)});
  if(!response.ok)throw Error('Unggah belum berhasil. Coba lagi.');const url=weddingService+'/storage/v1/object/public/wedding-media/'+path,form=$('wed-media');
  if(kind==='gallery')form.elements.gallery.value+=(form.elements.gallery.value?'\n':'')+url;else form.elements[kind].value=url;
  $('wed-status').textContent='File terunggah. Klik Simpan media untuk memasangnya pada undangan.';
