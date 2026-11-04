@@ -17,7 +17,7 @@
 <body>
 <div class="layout"><div class="mobile-shade" id="shade"></div><aside class="sidebar" id="sidebar"><div class="brand"><span class="brand-mark" id="brand-icon"></span>siap<span style="color:var(--pink);margin-left:-10px">nikah</span></div><div class="nav-label">Ruang pernikahan</div><nav class="nav" id="nav" aria-label="Menu utama"></nav><div class="sidebar-footer"><p>Direncanakan bersama.<br>Disiapkan dengan tenang.</p></div></aside><main class="main"><header class="topbar"><button class="menu-toggle" id="menu-toggle" aria-label="Buka menu"></button><div class="breadcrumb"><span>Ruang pernikahan &nbsp; / &nbsp; </span><strong id="crumb">Ringkasan</strong></div><div class="topright"><span class="save-state" id="save-state" aria-live="polite">Memuat…</span><div class="avatar" id="avatar">SN</div></div></header><div class="content"><div id="mode-banner"></div><div id="view"></div><div class="footer-note">Siap Nikah · Ruang bersama untuk hari istimewa</div></div></main></div>
 <dialog class="modal" id="modal"><div class="modal-head"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Tutup">×</button></div><div class="modal-body" id="modal-body"></div></dialog><div class="toast" id="toast" role="status" hidden></div>
-<script>window.WEDDING_CONFIG={"mode":"cloudflare-d1","supabaseUrl":"https://bcqszjdvfswmvesknnks.supabase.co","supabasePublishableKey":"sb_publishable_dP2qI-3Zvxx0QS6n_R_6jQ_VjwJ-1uU","functionName":"wedding-gateway","workerUrl":"https://siap-nikah-api.hasanudin-legal.workers.dev"};</script><script>
+<script>window.WEDDING_CONFIG={"mode":"cloudflare-d1","supabaseUrl":"https://kwmidvzvpdtyyqsmuedu.supabase.co","supabasePublishableKey":"sb_publishable_j65Fhxov54gRqnM-779r9w_e2prooAk","functionName":"wedding-gateway","workerUrl":"https://siap-nikah-api.hasanudin-legal.workers.dev"};</script><script>
 /* Shared business rules for the Apps Script runtime, browser preview and tests. */
 var WeddingCore = (function () {
   'use strict';
@@ -4703,6 +4703,62 @@ alignFeatureRows();
 
 
 
+
+/* Integrated wedding administration. Uses the signed-in owner's Supabase session. */
+const weddingService='https://kwmidvzvpdtyyqsmuedu.supabase.co', weddingPublicKey='sb_publishable_j65Fhxov54gRqnM-779r9w_e2prooAk';
+let weddingData={invitations:[],photos:[],media:{}};
+async function weddingManage(action='list',payload={}){
+ const access=await gatewayToken();
+ const response=await fetch(weddingService+'/rest/v1/rpc/sj_manage',{method:'POST',headers:{apikey:weddingPublicKey,Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({p_action:action,p_payload:payload}),signal:AbortSignal.timeout(20000)});
+ const data=await response.json();if(!response.ok)throw Error(data.message||'Pengelolaan undangan belum tersedia.');weddingData=data;return data;
+}
+async function weddingSync(){return weddingManage('sync',{guests:db.guests.map(g=>({id:g.id,name:g.name,quota:Number(g.quota)||1}))});}
+const invitationLinkBeforeWedding=invitationLink;
+invitationLink=function(x){const link=invitationLinkBeforeWedding(x),record=weddingData.invitations.find(i=>i.source_id===x.id);if(!link||!record)return '';const u=new URL(link);u.searchParams.set('t',record.token);return u.href;};
+const invitationModalBeforeWedding=invitationModal;
+invitationModal=async function(x){try{await weddingSync();invitationModalBeforeWedding(x);}catch(e){toast(e.message);}};
+async function weddingApplyRsvp(){
+ let updated=0;
+ for(const item of weddingData.invitations){
+ const guest=db.guests.find(g=>g.id===item.source_id);if(!guest||!item.attendance)continue;
+ const status=item.attendance==='Hadir'?'Hadir':item.attendance==='Tidak dapat hadir'?'Tidak hadir':'Belum pasti';
+ if(guest.status===status&&Number(guest.attending)===Number(item.guests))continue;
+ await save({collection:'guests',id:guest.id,version:guest.version,requestId:uuid(),action:'save',data:{...guest,status,attending:item.guests||0}});updated++;
+ }
+ toast(updated?updated+' konfirmasi diperbarui.':'Konfirmasi sudah sesuai.');
+}
+function weddingCsv(){
+ const rows=[['Nama','Kehadiran','Jumlah','Ucapan'],...weddingData.invitations.map(i=>[i.guest_name,i.attendance||'Belum menjawab',i.guests||0,i.message])];
+ const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/^[=+@-]/,"'"+String(v??'')[0]).replaceAll('"','""')+'"').join(',')).join('\r\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='rekap-rsvp.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+async function weddingPanel(){
+ try{await weddingSync();}catch(e){toast(e.message);return;}
+ const list=weddingData.invitations,photos=weddingData.photos,m=weddingData.media||{};
+ openModal('Undangan digital','<div class="notice">Tamu di aplikasi tersambung ke undangan pribadi. RSVP bersifat pribadi; ucapan dan foto hanya tampil setelah ditinjau.</div><div class="form-actions" style="justify-content:flex-start;flex-wrap:wrap"><a class="button secondary" href="https://weddingdreamsapps.github.io/Hasanudin-Efani-Angreini/" target="_blank" rel="noopener">Buka undangan</a><button class="button secondary" id="wed-refresh">Muat ulang</button><button class="button secondary" id="wed-import-rsvp">Perbarui daftar tamu dari RSVP</button><button class="button secondary" id="wed-csv">Ekspor RSVP</button></div><p class="subtitle">'+list.length+' undangan · '+list.filter(i=>i.attendance==='Hadir').length+' konfirmasi hadir · '+list.filter(i=>i.attendance==='Hadir').reduce((n,i)=>n+(i.guests||0),0)+' orang</p><label class="field" style="margin:18px 0">Cari tamu<input id="wed-search" placeholder="Nama atau kehadiran"></label><div id="wed-rows"></div><h3 style="margin-top:24px">Foto tamu</h3><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+photos.map(p=>'<article class="card" style="padding:12px"><img src="'+esc(p.image_data)+'" alt="'+esc(p.caption||'Foto tamu')+'" style="width:100%;max-height:180px;object-fit:contain"><strong>'+esc(p.guest_name)+'</strong><p>'+esc(p.caption)+'</p><button class="button secondary" data-wed-photo="'+esc(p.id)+'">'+(p.approved?'Sembunyikan':'Setujui foto')+'</button></article>').join('')+(photos.length?'':'<p class="subtitle">Belum ada foto tamu.</p>')+'</div><h3 style="margin-top:26px">Media undangan</h3><form id="wed-media" class="form-grid" style="margin-top:14px"><label class="field full">Video background (HTTPS)<input name="background_video" type="url" value="'+esc(m.background_video||'')+'"></label><label class="field full">Musik (HTTPS; kosong memakai musik bawaan)<input name="music_url" type="url" value="'+esc(m.music_url||'')+'"></label><label class="field full">Foto galeri, satu URL HTTPS per baris<textarea name="gallery">'+esc((m.gallery||[]).join('\n'))+'</textarea></label><label class="field full">Unggah media<input id="wed-upload" type="file" accept="video/mp4,audio/mpeg,image/jpeg,image/png,image/webp"></label><label class="field">Gunakan sebagai<select id="wed-kind"><option value="background_video">Video background</option><option value="music_url">Musik</option><option value="gallery">Foto galeri</option></select></label><button class="button secondary" type="button" id="wed-upload-button">Unggah file</button><button class="button field full">Simpan media</button></form><p id="wed-status" role="status" class="subtitle"></p>');
+ const draw=()=>{
+ const q=$('wed-search').value.toLowerCase();$('wed-rows').innerHTML=list.filter(i=>(i.guest_name+' '+(i.attendance||'Belum menjawab')).toLowerCase().includes(q)).map(i=>'<article class="card" style="padding:14px;margin-top:10px"><strong>'+esc(i.guest_name)+'</strong><p class="subtitle">'+esc(i.attendance||'Belum menjawab')+' · '+(i.guests||0)+' orang / kuota '+i.guest_limit+'</p><p style="white-space:pre-wrap">'+esc(i.message||'')+'</p><div class="form-actions" style="justify-content:flex-start;padding-top:10px;flex-wrap:wrap"><button class="button secondary" data-wed-copy="'+esc(i.token)+'">Salin tautan pribadi</button>'+(i.message&&i.publish?'<button class="button secondary" data-wed-wish="'+esc(i.token)+'">'+(i.approved?'Sembunyikan ucapan':'Setujui ucapan')+'</button>':'')+'</div></article>').join('')||'<p class="subtitle">Belum ada tamu. Tambahkan melalui Daftar Undangan.</p>';
+ document.querySelectorAll('[data-wed-copy]').forEach(b=>b.onclick=()=>copyText('https://weddingdreamsapps.github.io/Hasanudin-Efani-Angreini/?t='+b.dataset.wedCopy));
+ document.querySelectorAll('[data-wed-wish]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const i=list.find(i=>i.token===b.dataset.wedWish);await weddingManage('approve_wish',{token:i.token,approved:!i.approved});await weddingPanel();}catch(e){toast(e.message);b.disabled=false;}});
+ };draw();$('wed-search').oninput=draw;
+ $('wed-refresh').onclick=weddingPanel;$('wed-csv').onclick=weddingCsv;
+ $('wed-import-rsvp').onclick=async e=>{e.target.disabled=true;try{await weddingApplyRsvp();await weddingPanel();}catch(err){toast(err.message);e.target.disabled=false;}};
+ document.querySelectorAll('[data-wed-photo]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const p=photos.find(p=>p.id===b.dataset.wedPhoto);await weddingManage('approve_photo',{id:p.id,approved:!p.approved});await weddingPanel();}catch(e){toast(e.message);b.disabled=false;}});
+ $('wed-media').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button:not([type])');button.disabled=true;try{const f=new FormData(e.target);await weddingManage('media',{background_video:f.get('background_video'),music_url:f.get('music_url'),gallery:String(f.get('gallery')).split(/\r?\n/).map(x=>x.trim()).filter(Boolean)});$('wed-status').textContent='Media tersimpan. Muat ulang undangan untuk melihat hasilnya.';}catch(err){$('wed-status').textContent=err.message;}finally{button.disabled=false;}};
+ $('wed-upload-button').onclick=async e=>{
+ const file=$('wed-upload').files[0],kind=$('wed-kind').value;if(!file){toast('Pilih file terlebih dahulu.');return;}
+ const types={background_video:['video/mp4'],music_url:['audio/mpeg'],gallery:['image/jpeg','image/png','image/webp']};
+ if(!types[kind].includes(file.type)||file.size>25000000){toast('Pilih jenis file yang sesuai, maksimal 25 MB.');return;}
+ e.target.disabled=true;try{const ext={ 'video/mp4':'mp4','audio/mpeg':'mp3','image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];const path='media-'+uuid()+'.'+ext;
+ const response=await fetch(weddingService+'/storage/v1/object/wedding-media/'+path,{method:'POST',headers:{apikey:weddingPublicKey,Authorization:'Bearer '+await gatewayToken(),'Content-Type':file.type},body:file,signal:AbortSignal.timeout(120000)});
+ if(!response.ok)throw Error('Unggah belum berhasil. Coba lagi.');const url=weddingService+'/storage/v1/object/public/wedding-media/'+path,form=$('wed-media');
+ if(kind==='gallery')form.elements.gallery.value+=(form.elements.gallery.value?'\n':'')+url;else form.elements[kind].value=url;
+ $('wed-status').textContent='File terunggah. Klik Simpan media untuk memasangnya pada undangan.';
+ }catch(err){$('wed-status').textContent=err.message;}finally{e.target.disabled=false;}
+ };
+}
+const renderBeforeWedding=render;
+render=function(){renderBeforeWedding();if(!gatewaySession||!principal.owner)return;const nav=$('nav');if(nav&&!$('wedding-manager-nav')){const b=document.createElement('button');b.id='wedding-manager-nav';b.type='button';b.innerHTML=icon('guests')+'<span>Undangan Digital</span>';b.onclick=weddingPanel;nav.append(b);}};
+
 reload();
-</script>
-</body></html>
+</script></body></html>
