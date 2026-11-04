@@ -4770,3 +4770,64 @@ render=function(){renderBeforeWedding();if(!gatewaySession||!principal.owner)ret
 
 reload();
 </script></body></html>
+
+<style id="sepucuk-app-theme">
+/* Shared wedding identity: charcoal, wine, champagne. */
+html:root,html[data-theme="dark"]{--pink:#7d3c51;--pink-dark:#632c40;--tint:#f1e5e7;--ink:#332a2f;--muted:#766872;--line:#e5d9d7;--bg:#f7f1eb;--white:#fffaf5;--radius:18px}
+html body:not(:has(#gateway-login)){background:#f7f1eb;color:#332a2f}
+html body:not(:has(#gateway-login)) :is(.sidebar,.topbar,.bottom-nav){background:#fffaf5eF;border-color:#e5d9d7;backdrop-filter:blur(16px)}
+html body:not(:has(#gateway-login)) .sidebar{background:linear-gradient(165deg,#2c232a,#432e38);--pink:#efd7b4;--muted:#d0bfc3;--ink:#fff5e7;--line:#dfc49c33;--tint:#ffffff0b;color:#fff5e7;box-shadow:8px 0 35px #30202912}
+html body:not(:has(#gateway-login)) .sidebar :is(.brand,.nav-label,.sidebar-footer p){color:#e8d7c4}
+html body:not(:has(#gateway-login)) .sidebar .brand-mark{background:#dfc49c15;color:#dfc49c;border:1px solid #dfc49c44}
+html body:not(:has(#gateway-login)) .sidebar #nav button{color:#e6d9d3;border-radius:12px}
+html body:not(:has(#gateway-login)) .sidebar #nav button svg{color:#d8b887}
+html body:not(:has(#gateway-login)) .sidebar #nav button:hover{background:#ffffff0b}
+html body:not(:has(#gateway-login)) .sidebar #nav button.active{background:#e9d3b3;color:#382831;box-shadow:none}
+html body:not(:has(#gateway-login)) .sidebar #nav button.active svg{color:#6e3449}
+html body:not(:has(#gateway-login)) :is(.topbar h1,#view h2){color:#61394a}
+html body:not(:has(#gateway-login)) #view .hero{background:linear-gradient(120deg,#432c38,#703c50);border:1px solid #dfc49c44;box-shadow:0 14px 40px #432c3815}
+html body:not(:has(#gateway-login)) #view .hero h2{font-family:Georgia,serif;font-weight:400;color:#fff3e1}
+html body:not(:has(#gateway-login)) #view :is(.card,.metric,.doc-row,.user-card){background:#fffaf5;border-color:#e5d9d7;box-shadow:0 5px 22px #432c3805;border-radius:18px}
+html body:not(:has(#gateway-login)) #view .metric>span:first-child{color:#806574}
+html body:not(:has(#gateway-login)) #view .table th{color:#785366;background:#f3e9e5}
+html body:not(:has(#gateway-login)) .button{background:#793e53;border-color:#793e53;color:#fff8ed;border-radius:11px}
+html body:not(:has(#gateway-login)) .button.secondary{background:#fffaf5;color:#654253;border-color:#dfcccb}
+html body:not(:has(#gateway-login)) .button.subtle{background:#f1e3e6;color:#793e53;border-color:transparent}
+html body:not(:has(#gateway-login)) .button.danger{background:#fff3f1;color:#ac3b46;border-color:#e7c4c6}
+html body:not(:has(#gateway-login)) :is(input,textarea,select){background:#fffdf9;color:#332a2f;border-color:#dccacb;border-radius:10px}
+html body:not(:has(#gateway-login)) .concept-theme{background:#f3e8d6;color:#805638;border-color:#e1caa7}
+html body:not(:has(#gateway-login)) .donut{background:conic-gradient(#8a4d60 calc(var(--pct)*1%),#ebdedf 0)}
+html body:not(:has(#gateway-login)) .donut:after{background:#fffaf5}
+html body:not(:has(#gateway-login)) :is(.badge.pink,.metric-icon){background:#f0e1e5;color:#793e53}
+html body:not(:has(#gateway-login)) .progress i{background:#986276}
+html body:not(:has(#gateway-login)) .notice{background:#f0e7e0;color:#664e59}
+html body:not(:has(#gateway-login)) .bottom-nav button.active{color:#793e53;background:#f0e1e5}
+html[data-theme="dark"] body:not(:has(#gateway-login)){--ink:#f5e9de;--muted:#c4afb6;--line:#dfc49c26;--bg:#241f24;--white:#30272f;--pink:#e5b9c5;--tint:#ffffff0b;background:#241f24;color:#f5e9de}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.topbar,.bottom-nav){background:#2b232bf2;border-color:#dfc49c26}
+html[data-theme="dark"] body:not(:has(#gateway-login)) #view :is(.card,.metric,.doc-row,.user-card){background:#30272f;border-color:#dfc49c26;color:#f5e9de}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(.topbar h1,#view h2){color:#e8cbaa}
+html[data-theme="dark"] body:not(:has(#gateway-login)) #view .metric>span:first-child{color:#d7b9c5}
+html[data-theme="dark"] body:not(:has(#gateway-login)) #view .table th{background:#382a34;color:#e8cbaa}
+html[data-theme="dark"] body:not(:has(#gateway-login)) :is(input,select,textarea){background:#241f24;color:#fff3e1;border-color:#dfc49c44}
+html[data-theme="dark"] body:not(:has(#gateway-login)) .button.secondary{background:#382a34;color:#f0d7bd;border-color:#dfc49c44}
+html[data-theme="dark"] body:not(:has(#gateway-login)) .notice{background:#3b2e37;color:#eedccf}
+html[data-theme="dark"] body:not(:has(#gateway-login)) .donut:after{background:#30272f}
+html body:has(#gateway-login){background:#211d20}
+html #view .login-shell{background:linear-gradient(100deg,#211d2099,#36273088),url('mountain-sunset.png') center/cover no-repeat}
+html #view .login-shell:before{background:linear-gradient(0deg,#211d2099,transparent 70%)}
+html #view .login-story .login-initials{color:#e2c59c;font-style:italic;font-weight:400;letter-spacing:-4px}
+html #view .login-story h2{color:#fff1df;font-size:clamp(18px,2.3vw,30px);white-space:nowrap}
+html #view .login-story p{color:#dfc49c;letter-spacing:3px;font-size:10px}
+html #view .login-card{background:#2c232a66;border:1px solid #dfc49c55;border-radius:22px;backdrop-filter:blur(12px);box-shadow:0 24px 80px #0002;padding:38px}
+html #view .login-card h1{font:italic 40px/1.15 Georgia,serif;color:#fff0df}
+html #view .login-card .subtitle{color:#e5d3ce;line-height:1.8}
+html #gateway-login input{background:#211d2055;color:#fff4e5;border:1px solid #dfc49c55;border-radius:10px}
+html #gateway-login input:focus{outline-color:#dfc49c}
+html #gateway-login label{color:#f1dfce}
+html #gateway-login .button{background:#7d3c5166;color:#fff2e3;border:1px solid #dfc49c99;border-radius:99px;min-height:50px;box-shadow:none}
+html #gateway-login .button:hover{background:#7d3c51aa}
+html #view .login-footnote{color:#d8c2bd}
+html .button:focus-visible,html button:focus-visible{outline:2px solid #bd936a;outline-offset:4px}
+@media(max-width:800px){html #view .login-shell{padding:30px 20px;gap:25px}html #view .login-card{padding:28px 24px}html #view .login-story h2{font-size:22px}html #view .login-story .login-initials{font-size:76px}html body:not(:has(#gateway-login)) .hero h2{font-size:clamp(18px,5vw,27px)}}
+@media print{html body:not(:has(#gateway-login)){background:#fff;color:#222}html body:not(:has(#gateway-login)) #view :is(.card,.metric){background:#fff;box-shadow:none;color:#222}}
+</style>
